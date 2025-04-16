@@ -2,7 +2,7 @@
 
 > 아카데미 여정을 해저 탐험에 비유하여, 러너가 목표를 잊지 않고 지속적으로 리마인드하며 성장 방향을 확인할 수 있도록 돕는 앱입니다.
 
-![alt text](image.png)
+![alt text](/docs/assets/image.png)
 
 [![Swift](https://img.shields.io/badge/Swift-6.0.3-orange.svg)]()
 [![Xcode](https://img.shields.io/badge/Xcode-16.2-blue.svg)]()
