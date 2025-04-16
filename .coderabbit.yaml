@@ -1,2 +1,21 @@
-review:
-  enabled: true
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "ko"
+early_access: false
+
+reviews:
+  profile: "assertive" # chill / balanced / assertive
+  auto_review:
+    enabled: true
+    drafts: false
+  tools:
+    swiftlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    languagetool:
+      enabled: true
+      level: picky
+
+chat:
+  auto_reply: true
