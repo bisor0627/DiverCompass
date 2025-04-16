@@ -1,7 +1,7 @@
 // MARK: - Data/Seed.swift
 import Foundation
 
-struct JourneySeed {
+struct Cycles {
     static let list: [Journey] = [
         Journey(name: "Prelude", type: .bridge,
                 startDate: DateFormatter.kst.date(from: "2025-03-10")!,
@@ -37,6 +37,9 @@ struct JourneySeed {
                 endDate: DateFormatter.kst.date(from: "2025-08-08")!),
         Journey(name: "Challenge 5", type: .challenge,
                 startDate: DateFormatter.kst.date(from: "2025-08-11")!,
+                endDate: DateFormatter.kst.date(from: "2025-08-22")!),
+        Journey(name: "Bridge 5", type: .bridge,
+                startDate: DateFormatter.kst.date(from: "2025-08-25")!,
                 endDate: DateFormatter.kst.date(from: "2025-08-29")!),
         Journey(name: "Challenge 6", type: .challenge,
                 startDate: DateFormatter.kst.date(from: "2025-09-01")!,
