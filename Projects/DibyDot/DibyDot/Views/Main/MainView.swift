@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct MainView: View {
-    
+
     private var progressList: [CycleProgress] {
-    CycleProgressUtil.generateProgressList(from: Cycles.list)
+    CycleProgressUtil.generateProgressList(from: kCycles)
     }
 
     private var currentCycle: CycleProgress? {
@@ -11,7 +11,7 @@ struct MainView: View {
     }
 
     private var overallCycle: CycleProgress {
-        CycleProgressUtil.overallProgress(from: Cycles.list)
+        CycleProgressUtil.overallProgress(from: kCycles)
     }
 
     var body: some View {
