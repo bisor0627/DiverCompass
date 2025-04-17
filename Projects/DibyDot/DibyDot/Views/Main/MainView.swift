@@ -18,7 +18,7 @@ struct MainView: View {
         NavigationStack {
             VStack(spacing: 20) {
                 NavigationLink(destination: SettingView()) {
-                    Text("🎯 목표/회고 설정")
+                    Text("🎯 목표/회고 설정").tint(.oceanSplash)
                 }
                 CycleProgressView(
                     isOverall: true,
