@@ -1,14 +1,36 @@
 import SwiftUI
 
 struct MainView: View {
+    
+    private var progressList: [CycleProgress] {
+    CycleProgressUtil.generateProgressList(from: Cycles.list)
+    }
+
+    private var currentCycle: CycleProgress? {
+        CycleProgressUtil.currentCycle(from: progressList)
+    }
+
+    private var overallCycle: CycleProgress {
+        CycleProgressUtil.overallProgress(from: Cycles.list)
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
                 NavigationLink(destination: SettingView()) {
                     Text("🎯 목표/회고 설정")
                 }
-                ProgressView(value: 0.5, total: 1)
-                    .padding()
+                CycleProgressView(
+                    isOverall: true,
+                    progressList: progressList,
+                    currentCycle: overallCycle
+                )
+                CycleProgressView(
+                    isOverall: false,
+                    progressList: progressList,
+                    currentCycle: currentCycle
+                )
+
             }
             .padding()
             .navigationTitle("나의 여정")
