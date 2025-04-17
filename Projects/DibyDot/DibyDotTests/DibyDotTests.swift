@@ -13,7 +13,7 @@ final class GoalTests: XCTestCase {
         let goal = GlobalGoal(
             id: UUID(),
             title: "성장 여정 되돌아보기",
-            period: Date(timeIntervalSince1970: 0)...Date()
+            period: Calendar.current.date(from: DateComponents(year: 2025, month: 1, day: 1))!...Date()
         )
         XCTAssertFalse(goal.period.isEmpty)
     }
@@ -37,5 +37,17 @@ final class GoalTests: XCTestCase {
             linkedGoalID: nil
         )
         XCTAssertNil(reflection.linkedGoalID)
+    }
+
+    func testReflectionWithLinkedGoal() {
+        let goalID = UUID()
+        let reflection = Reflection(
+            id: UUID(),
+            content: "목표와 연결된 회고 작성",
+            createdAt: Date(),
+            cycleNameAtWrittenTime: "Challenge 2",
+            linkedGoalID: goalID
+        )
+        XCTAssertEqual(reflection.linkedGoalID, goalID)
     }
 }
