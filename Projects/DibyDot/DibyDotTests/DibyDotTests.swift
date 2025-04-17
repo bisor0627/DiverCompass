@@ -1,0 +1,41 @@
+//
+//  DibyDotTests.swift
+//  DibyDotTests
+//
+//  Created by kirby on 4/17/25.
+//
+
+import XCTest
+@testable import DibyDot
+
+final class GoalTests: XCTestCase {
+    func testGlobalGoalPeriodRange() {
+        let goal = GlobalGoal(
+            id: UUID(),
+            title: "성장 여정 되돌아보기",
+            period: Date(timeIntervalSince1970: 0)...Date()
+        )
+        XCTAssertFalse(goal.period.isEmpty)
+    }
+
+    func testCycleGoalCreation() {
+        let goal = CycleGoal(
+            id: UUID(),
+            cycleName: "Challenge 2",
+            title: "마음을 지키는 연습",
+            createdAt: Date()
+        )
+        XCTAssertEqual(goal.cycleName, "Challenge 2")
+    }
+
+    func testReflectionWithoutGoal() {
+        let reflection = Reflection(
+            id: UUID(),
+            content: "오늘은 목표 없이 회고만 해봤다",
+            createdAt: Date(),
+            cycleNameAtWrittenTime: "Challenge 2",
+            linkedGoalID: nil
+        )
+        XCTAssertNil(reflection.linkedGoalID)
+    }
+}
