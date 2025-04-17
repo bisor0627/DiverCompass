@@ -8,17 +8,17 @@ struct CycleProgressView: View {
     var body: some View {
         VStack(spacing: 8) {
             if isOverall {
-                    VStack(spacing: 4) {
-                        HStack(spacing: 4) {
-                            ForEach(progressList, id: \.name) { cycle in
-                                createProgressBar(cycle: cycle)
-                            }
+                VStack(spacing: 4) {
+                    HStack(spacing: 4) {
+                        ForEach(progressList, id: \.name) { cycle in
+                            createProgressBar(cycle: cycle)
                         }
-                        createProgressText(cycle: currentCycle)
                     }
-                } else {
-                    createProgressBar(cycle: currentCycle)
                     createProgressText(cycle: currentCycle)
+                }
+            } else {
+                createProgressBar(cycle: currentCycle)
+                createProgressText(cycle: currentCycle)
             }
         }
     }
@@ -27,7 +27,7 @@ struct CycleProgressView: View {
     func createProgressBar(cycle: CycleProgress?) -> some View {
         if let cycle = cycle {
             let progress = cycle.progressRatio
-            let color = Color.blue
+            let color = Color.accentColor
 
             ZStack(alignment: .center) {
                 ProgressView(value: progress)
@@ -39,7 +39,7 @@ struct CycleProgressView: View {
                         .offset(y: -14).symbolEffect(.wiggle)
                 }
             }
-            .frame(height: 20) // 여유 공간 확보
+            .frame(height: 20)
         } else {
             EmptyView()
         }
