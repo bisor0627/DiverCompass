@@ -69,7 +69,6 @@ struct SettingView: View {
     )
     .navigationTitle("목표/회고 설정")
     .navigationBarTitleDisplayMode(.inline)
-    .padding()
 }
 }
 
