@@ -4,7 +4,7 @@ import Foundation
 struct Cycle: Identifiable {
     let id = UUID()
     let name: String
-    let type: JourneyType
+    let type: CycleType
     let startDate: Date
     let endDate: Date
 }
