@@ -1,15 +1,15 @@
 import Foundation
 
 
-struct Journey: Identifiable {
+struct Cycle: Identifiable {
     let id = UUID()
     let name: String
-    let type: JourneyType
+    let type: CycleType
     let startDate: Date
     let endDate: Date
 }
 
-enum JourneyType: String {
+enum CycleType: String {
     case challenge
     case bridge
     case other
