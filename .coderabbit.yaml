@@ -11,6 +11,7 @@ reviews:
   tools:
     swiftlint:
       enabled: true
+      config_file: "Projects/.swiftlint.yml"
     yamllint:
       enabled: true
     languagetool:
