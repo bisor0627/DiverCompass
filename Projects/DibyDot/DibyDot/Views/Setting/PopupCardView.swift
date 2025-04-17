@@ -12,15 +12,20 @@ struct PopupCardView: View {
     var mode: PopupCardMode
     var onSave: () -> Void
     var onDelete: (() -> Void)?
-
+    @State private var backgroundOpacity: Double = 0
     var body: some View {
         ZStack {
-            Color.black.opacity(0.3)
+            Color.black
+                .opacity(backgroundOpacity)
                 .ignoresSafeArea()
                 .onTapGesture {
-                    isPresented = false
+                    withAnimation {
+                        backgroundOpacity = 0
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        isPresented = false
+                    }
                 }
-
             GeometryReader { geometry in
                 let cardWidth = min(geometry.size.width * 0.85, 400)
                 let editorHeight = max(geometry.size.height * 0.18, 120)
@@ -71,6 +76,11 @@ struct PopupCardView: View {
                     Spacer()
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height)
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        backgroundOpacity = 0.3
+                    }
+                }
             }
         }
     }

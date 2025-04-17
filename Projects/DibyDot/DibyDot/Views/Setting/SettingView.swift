@@ -11,6 +11,8 @@ struct SettingView: View {
 
     @State private var reflections: [Reflection] = []
     @State private var selectedReflection: Reflection? = nil
+    
+
 
     private func showPopup(for mode: PopupCardMode) {
         switch mode {
@@ -117,10 +119,7 @@ struct SettingView: View {
                 PopupCardView(
                     isPresented: Binding(
                         get: { popupMode != nil },
-                        set: { if !$0 {
-                            popupMode = nil
-                            selectedReflection = nil
-                        } }
+                        set: { if !$0 { popupMode = nil; selectedReflection = nil } }
                     ),
                     text: bindingText(for: mode),
                     mode: mode,
@@ -170,16 +169,14 @@ struct SettingView: View {
                             }
                         }
                     }
-                )
+                ).transition(.opacity)
+                    .zIndex(1)
             }
         }
-        .animation(
-            .easeInOut,
-            value: popupMode
-        )
         .navigationTitle("목표/회고 설정")
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea( edges: .bottom)
+        .animation(.easeInOut(duration: 0.3), value: popupMode)
     }
 
     private func bindingText(for mode: PopupCardMode) -> Binding<String> {
