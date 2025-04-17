@@ -58,13 +58,8 @@ struct SettingView: View {
         // 커스텀 다이얼로그
         if showDialog {
             PopupCardView(
-                isPresented: $showDialog
-            )
-            .transition(
-                .scale
-            )
-            .zIndex(
-                1
+                isPresented: $showDialog,
+                globalGoal: $globalGoal
             )
         }
     }
@@ -72,12 +67,8 @@ struct SettingView: View {
         .easeInOut,
         value: showDialog
     )
-    .navigationTitle(
-        "목표/회고 설정"
-    )
-    .navigationBarTitleDisplayMode(
-        .inline
-    )
+    .navigationTitle("목표/회고 설정")
+    .navigationBarTitleDisplayMode(.inline)
     .padding()
 }
 }
