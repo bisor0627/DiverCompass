@@ -6,7 +6,11 @@ struct SettingView: View {
 
     @State private var globalGoalText = ""
     @State private var cycleGoalText = ""
+    @State private var reflectionText = ""
     @State private var popupMode: PopupCardMode? = nil
+
+    @State private var reflections: [Reflection] = []
+    @State private var selectedReflection: Reflection? = nil
 
     private func showPopup(for mode: PopupCardMode) {
         switch mode {
@@ -15,7 +19,7 @@ struct SettingView: View {
         case .cycleGoal:
             cycleGoalText = currentCycleGoal?.title ?? ""
         case .reflection:
-            break // 추후 구현 예정
+            reflectionText = selectedReflection?.content ?? ""
         }
         popupMode = mode
     }
@@ -65,6 +69,46 @@ struct SettingView: View {
                     }
                 }
 
+                // 회고 작성 버튼
+                Section(header: Text("회고").font(.headline)) {
+                    Button("회고 작성하기") {
+                        selectedReflection = nil
+                        showPopup(for: .reflection)
+                    }
+                    .padding()
+                    List {
+                        ForEach(reflections.reversed()) { reflection in
+                            Button {
+                                selectedReflection = reflection
+                                showPopup(for: .reflection)
+                            } label: {
+                                HStack(alignment: .top) {
+                                    Image(systemName: "bubble.left.fill")
+                                        .foregroundColor(.blue)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(reflection.content)
+                                            .font(.body)
+                                        if let name = reflection.cycleNameAtWrittenTime {
+                                            Text("📍 \(name)")
+                                                .font(.caption2)
+                                                .foregroundColor(.blue)
+                                        }
+                                        Text(reflection.createdAt, style: .date)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(12)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                
+                }
+
                 Spacer()
             }
 
@@ -73,7 +117,10 @@ struct SettingView: View {
                 PopupCardView(
                     isPresented: Binding(
                         get: { popupMode != nil },
-                        set: { if !$0 { popupMode = nil } }
+                        set: { if !$0 {
+                            popupMode = nil
+                            selectedReflection = nil
+                        } }
                     ),
                     text: bindingText(for: mode),
                     mode: mode,
@@ -95,7 +142,20 @@ struct SettingView: View {
                                 )
                             }
                         case .reflection:
-                            break // 추후 구현 예정
+                            if let selected = selectedReflection {
+                                if let index = reflections.firstIndex(where: { $0.id == selected.id }) {
+                                    reflections[index].content = reflectionText
+                                }
+                            } else if let current = CycleProgressUtil.currentCycle(from: CycleProgressUtil.generateProgressList(from: kCycles)) {
+                                let newReflection = Reflection(
+                                    id: UUID(),
+                                    content: reflectionText,
+                                    createdAt: Date(),
+                                    cycleNameAtWrittenTime: current.name,
+                                    linkedGoalID: currentCycleGoal?.id
+                                )
+                                reflections.insert(newReflection, at: 0)
+                            }
                         }
                     },
                     onDelete: {
@@ -105,7 +165,9 @@ struct SettingView: View {
                         case .cycleGoal:
                             currentCycleGoal = nil
                         case .reflection:
-                            break // 추후 구현 예정
+                            if let selected = selectedReflection {
+                                reflections.removeAll { $0.id == selected.id }
+                            }
                         }
                     }
                 )
@@ -117,6 +179,7 @@ struct SettingView: View {
         )
         .navigationTitle("목표/회고 설정")
         .navigationBarTitleDisplayMode(.inline)
+        .ignoresSafeArea( edges: .bottom)
     }
 
     private func bindingText(for mode: PopupCardMode) -> Binding<String> {
@@ -126,7 +189,7 @@ struct SettingView: View {
         case .cycleGoal:
             return $cycleGoalText
         case .reflection:
-            return .constant("") // 회고용은 추후 구현
+            return $reflectionText
         }
     }
-} 
+}
