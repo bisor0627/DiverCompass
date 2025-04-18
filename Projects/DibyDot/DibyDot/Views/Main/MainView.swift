@@ -4,94 +4,88 @@ struct MainView: View {
 
     @State private var globalGoal: GlobalGoal?
     @State private var currentCycleGoal: CycleGoal?
-    @State private var progressList: [CycleProgress] = CycleProgressUtil.generateProgressList(
-        from: kCycles
-    )
+
+    @State private var currentDate: Date = .now
+
+    private var progressList: [CycleProgress] {
+        CycleProgressUtil.generateProgressList(from: kCycles, today: currentDate)
+    }
     private var currentCycle: CycleProgress? {
-        CycleProgressUtil
-            .currentCycle(
-                from: progressList
-            )
+        CycleProgressUtil.currentCycle(from: progressList)
     }
     private var overallCycle: CycleProgress {
-        CycleProgressUtil
-            .overallProgress(
-                from: kCycles
-            )
+        CycleProgressUtil.overallProgress(from: kCycles, today: currentDate)
     }
-    
+
     var body: some View {
         NavigationStack {
-            VStack(
-                spacing: 20
-            ) {
+            VStack(spacing: 20) {
                 NavigationLink(
                     destination: SettingView(
                         globalGoal: $globalGoal,
                         currentCycleGoal: $currentCycleGoal
                     )
                 ) {
-                    Text(
-                        "🎯 목표/회고 설정"
-                    )
-                    .tint(
-                        .oceanSplash
-                    )
+                    Text("🎯 목표/회고 설정")
+                        .tint(.oceanSplash)
                 }
-                VStack(
-                    alignment: .leading,
-                    spacing: 4
-                ) {
-                    Text(
-                        "전체 목표"
-                    )
-                    .font(
-                        .caption
-                    )
-                    Text(
-                        globalGoal?.title ?? "목표가 아직 없어요!"
-                    )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("전체 목표")
+                        .font(.caption)
+                    Text(globalGoal?.title ?? "목표가 아직 없어요!")
                     CycleProgressView(
                         isOverall: true,
                         progressList: progressList,
                         currentCycle: overallCycle
-                    ).padding(
-                        .vertical,
-                        16
-                    )
+                    ).padding(.vertical, 16)
                 }
-                
-                VStack(
-                    alignment: .leading,
-                    spacing: 4
-                ) {
-                    Text(
-                        "현재 사이클 목표"
-                    )
-                    .font(
-                        .caption
-                    )
-                    Text(
-                        currentCycleGoal?.title ?? "사이클 목표를 설정해보세요"
-                    )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("현재 사이클 목표")
+                        .font(.caption)
+                    Text(currentCycleGoal?.title ?? "사이클 목표를 설정해보세요")
                     CycleProgressView(
                         isOverall: false,
                         progressList: progressList,
                         currentCycle: currentCycle
-                    ).padding(
-                        .vertical,
-                        16
-                    )
+                    ).padding(.vertical, 16)
                 }
+
+                // 날짜 조작 테스트용 버튼
+                VStack(spacing: 10) {
+                    Text("현재 날짜: \(formattedDate(currentDate))")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+
+                    HStack(spacing: 16) {
+                        Button("◀︎ 하루 전") {
+                            currentDate = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
+                        }
+                        .buttonStyle(.bordered)
+
+                        Button("하루 후 ▶︎") {
+                            currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+                .padding(.top, 8)
+
+                Spacer()
             }
             .padding()
-            .navigationTitle(
-                "나의 여정"
-            )
-            .navigationBarTitleDisplayMode(
-                .inline
-            )
+            .navigationTitle("나의 여정")
+            .navigationBarTitleDisplayMode(.inline)
         }
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.string(from: date)
     }
 }
 
