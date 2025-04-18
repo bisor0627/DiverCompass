@@ -31,6 +31,7 @@ struct SettingView: View {
 
     var body: some View {
         ZStack {
+            BubbleBackgroundView()
             VStack(spacing: 20) {
                 // GlobalGoal 표시 및 편집 섹션
                 Section(header: Text("전체 목표").font(.headline)) {
