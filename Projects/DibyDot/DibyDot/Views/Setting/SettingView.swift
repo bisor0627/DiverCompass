@@ -2,7 +2,8 @@ import SwiftUI
 
 struct SettingView: View {
     @Binding var globalGoal: GlobalGoal?
-    @Binding var currentCycleGoal: CycleGoal?
+    @Binding var cycleGoals: [String: CycleGoal]
+    var currentCycleName: String?
 
     @State private var globalGoalText = ""
     @State private var cycleGoalText = ""
@@ -12,13 +13,16 @@ struct SettingView: View {
     @State private var reflections: [Reflection] = []
     @State private var selectedReflection: Reflection?
 
-
     private func showPopup(for mode: PopupCardMode) {
         switch mode {
         case .globalGoal:
             globalGoalText = globalGoal?.title ?? ""
         case .cycleGoal:
-            cycleGoalText = currentCycleGoal?.title ?? ""
+            if let currentName = currentCycleName {
+                cycleGoalText = cycleGoals[currentName]?.title ?? ""
+            } else {
+                cycleGoalText = ""
+            }
         case .reflection:
             reflectionText = selectedReflection?.content ?? ""
         }
@@ -51,7 +55,8 @@ struct SettingView: View {
 
                 // CycleGoal 표시 및 편집 섹션
                 Section(header: Text("현재 사이클 목표").font(.headline)) {
-                    if let goal = currentCycleGoal {
+                    if let currentName = currentCycleName,
+                       let goal = cycleGoals[currentName] {
                         HStack {
                             Text(goal.title)
                             Spacer()
@@ -90,7 +95,7 @@ struct SettingView: View {
                                     Text(reflection.content)
                                         .font(.body)
                                     if let name = reflection.cycleNameAtWrittenTime {
-                                        Text("📍 \(name)")
+                                        Text("\u{1F4CD} \(name)")
                                             .font(.caption2)
                                             .foregroundColor(.blue)
                                     }
@@ -124,42 +129,33 @@ struct SettingView: View {
                         switch mode {
                         case .globalGoal:
                             guard let firstCycle = kCycles.first,
-                                  let lastCycle  = kCycles.last else {
-                                assertionFailure("kCycles 가 비어 있습니다 – GlobalGoal 저장 실패")
-                                return
-                            }
+                                  let lastCycle = kCycles.last else { return }
                             globalGoal = GlobalGoal(
                                 id: globalGoal?.id ?? UUID(),
                                 title: globalGoalText,
                                 period: firstCycle.startDate...lastCycle.endDate
                             )
                         case .cycleGoal:
-                            guard let current = CycleProgressUtil.currentCycle(from: CycleProgressUtil.generateProgressList(from: kCycles)) else {
-                                assertionFailure("현재 사이클을 찾을 수 없습니다 – CycleGoal 저장 실패")
-                                return
+                            if let currentName = currentCycleName {
+                                cycleGoals[currentName] = CycleGoal(
+                                    id: cycleGoals[currentName]?.id ?? UUID(),
+                                    cycleName: currentName,
+                                    title: cycleGoalText,
+                                    createdAt: Date()
+                                )
                             }
-                            currentCycleGoal = CycleGoal(
-                                id: currentCycleGoal?.id ?? UUID(),
-                                cycleName: current.name,
-                                title: cycleGoalText,
-                                createdAt: Date()
-                            )
                         case .reflection:
                             if let selected = selectedReflection {
                                 if let index = reflections.firstIndex(where: { $0.id == selected.id }) {
                                     reflections[index].content = reflectionText
                                 }
                             } else {
-                                guard let current = CycleProgressUtil.currentCycle(from: CycleProgressUtil.generateProgressList(from: kCycles)) else {
-                                    assertionFailure("현재 사이클을 찾을 수 없습니다 – Reflection 저장 실패")
-                                    return
-                                }
                                 let newReflection = Reflection(
                                     id: UUID(),
                                     content: reflectionText,
                                     createdAt: Date(),
-                                    cycleNameAtWrittenTime: current.name,
-                                    linkedGoalID: currentCycleGoal?.id
+                                    cycleNameAtWrittenTime: currentCycleName,
+                                    linkedGoalID: currentCycleName.flatMap { cycleGoals[$0]?.id }
                                 )
                                 reflections.insert(newReflection, at: 0)
                             }
@@ -170,7 +166,9 @@ struct SettingView: View {
                         case .globalGoal:
                             globalGoal = nil
                         case .cycleGoal:
-                            currentCycleGoal = nil
+                            if let currentName = currentCycleName {
+                                cycleGoals.removeValue(forKey: currentName)
+                            }
                         case .reflection:
                             if let selected = selectedReflection {
                                 reflections.removeAll { $0.id == selected.id }
@@ -183,7 +181,7 @@ struct SettingView: View {
         }
         .navigationTitle("목표/회고 설정")
         .navigationBarTitleDisplayMode(.inline)
-        .ignoresSafeArea( edges: .bottom)
+        .ignoresSafeArea(edges: .bottom)
         .animation(.easeInOut(duration: 0.3), value: popupMode)
     }
 
