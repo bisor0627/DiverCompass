@@ -7,11 +7,10 @@ struct SettingView: View {
     @State private var globalGoalText = ""
     @State private var cycleGoalText = ""
     @State private var reflectionText = ""
-    @State private var popupMode: PopupCardMode? = nil
+    @State private var popupMode: PopupCardMode?
 
     @State private var reflections: [Reflection] = []
-    @State private var selectedReflection: Reflection? = nil
-    
+    @State private var selectedReflection: Reflection?
 
 
     private func showPopup(for mode: PopupCardMode) {
@@ -77,38 +76,36 @@ struct SettingView: View {
                         selectedReflection = nil
                         showPopup(for: .reflection)
                     }
-                    .padding()
-                    List {
-                        ForEach(reflections.reversed()) { reflection in
-                            Button {
-                                selectedReflection = reflection
-                                showPopup(for: .reflection)
-                            } label: {
-                                HStack(alignment: .top) {
-                                    Image(systemName: "bubble.left.fill")
-                                        .foregroundColor(.blue)
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(reflection.content)
-                                            .font(.body)
-                                        if let name = reflection.cycleNameAtWrittenTime {
-                                            Text("📍 \(name)")
-                                                .font(.caption2)
-                                                .foregroundColor(.blue)
-                                        }
-                                        Text(reflection.createdAt, style: .date)
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
+                    .padding(.vertical, 4)
+
+                    ForEach(reflections.reversed()) { reflection in
+                        Button {
+                            selectedReflection = reflection
+                            showPopup(for: .reflection)
+                        } label: {
+                            HStack(alignment: .top) {
+                                Image(systemName: "bubble.left.fill")
+                                    .foregroundColor(.blue)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(reflection.content)
+                                        .font(.body)
+                                    if let name = reflection.cycleNameAtWrittenTime {
+                                        Text("📍 \(name)")
+                                            .font(.caption2)
+                                            .foregroundColor(.blue)
                                     }
-                                    Spacer()
+                                    Text(reflection.createdAt, style: .date)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
                                 }
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(12)
+                                Spacer()
                             }
-                            .buttonStyle(.plain)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
                         }
+                        .buttonStyle(.plain)
                     }
-                
                 }
 
                 Spacer()
@@ -126,26 +123,37 @@ struct SettingView: View {
                     onSave: {
                         switch mode {
                         case .globalGoal:
+                            guard let firstCycle = kCycles.first,
+                                  let lastCycle  = kCycles.last else {
+                                assertionFailure("kCycles 가 비어 있습니다 – GlobalGoal 저장 실패")
+                                return
+                            }
                             globalGoal = GlobalGoal(
                                 id: globalGoal?.id ?? UUID(),
                                 title: globalGoalText,
-                                period: kCycles.first!.startDate...kCycles.last!.endDate
+                                period: firstCycle.startDate...lastCycle.endDate
                             )
                         case .cycleGoal:
-                            if let current = CycleProgressUtil.currentCycle(from: CycleProgressUtil.generateProgressList(from: kCycles)) {
-                                currentCycleGoal = CycleGoal(
-                                    id: currentCycleGoal?.id ?? UUID(),
-                                    cycleName: current.name,
-                                    title: cycleGoalText,
-                                    createdAt: Date()
-                                )
+                            guard let current = CycleProgressUtil.currentCycle(from: CycleProgressUtil.generateProgressList(from: kCycles)) else {
+                                assertionFailure("현재 사이클을 찾을 수 없습니다 – CycleGoal 저장 실패")
+                                return
                             }
+                            currentCycleGoal = CycleGoal(
+                                id: currentCycleGoal?.id ?? UUID(),
+                                cycleName: current.name,
+                                title: cycleGoalText,
+                                createdAt: Date()
+                            )
                         case .reflection:
                             if let selected = selectedReflection {
                                 if let index = reflections.firstIndex(where: { $0.id == selected.id }) {
                                     reflections[index].content = reflectionText
                                 }
-                            } else if let current = CycleProgressUtil.currentCycle(from: CycleProgressUtil.generateProgressList(from: kCycles)) {
+                            } else {
+                                guard let current = CycleProgressUtil.currentCycle(from: CycleProgressUtil.generateProgressList(from: kCycles)) else {
+                                    assertionFailure("현재 사이클을 찾을 수 없습니다 – Reflection 저장 실패")
+                                    return
+                                }
                                 let newReflection = Reflection(
                                     id: UUID(),
                                     content: reflectionText,

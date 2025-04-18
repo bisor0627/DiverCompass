@@ -18,14 +18,7 @@ struct PopupCardView: View {
             Color.black
                 .opacity(backgroundOpacity)
                 .ignoresSafeArea()
-                .onTapGesture {
-                    withAnimation {
-                        backgroundOpacity = 0
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        isPresented = false
-                    }
-                }
+                .onTapGesture { dismissWithFade() }
             GeometryReader { geometry in
                 let cardWidth = min(geometry.size.width * 0.85, 400)
                 let editorHeight = max(geometry.size.height * 0.18, 120)
@@ -38,6 +31,7 @@ struct PopupCardView: View {
                             .font(.headline)
 
                         TextEditor(text: $text)
+                            .scrollContentBackground(.hidden) // iOS 16+
                             .frame(height: editorHeight)
                             .background(Color(.systemBackground).opacity(0.6))
                             .cornerRadius(12)
@@ -48,21 +42,22 @@ struct PopupCardView: View {
 
                         HStack(spacing: 16) {
                             Button("취소") {
-                                isPresented = false
+                                dismissWithFade()
                             }
                             .foregroundColor(.red)
 
                             if let onDelete = onDelete {
                                 Button("삭제") {
                                     onDelete()
-                                    isPresented = false
+                                    dismissWithFade()
                                 }
                                 .foregroundColor(.red)
                             }
 
                             Button("저장") {
+                                text = text.trimmingCharacters(in: .whitespacesAndNewlines)
                                 onSave()
-                                isPresented = false
+                                dismissWithFade()
                             }
                             .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         }
@@ -82,6 +77,13 @@ struct PopupCardView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func dismissWithFade() {
+        withAnimation { backgroundOpacity = 0 }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            isPresented = false
         }
     }
 
