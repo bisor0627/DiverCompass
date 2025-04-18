@@ -31,27 +31,15 @@ struct MainView: View {
                         .tint(.oceanSplash)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("전체 목표")
-                        .font(.caption)
-                    Text(globalGoal?.title ?? "목표가 아직 없어요!")
-                    CycleProgressView(
-                        isOverall: true,
-                        progressList: progressList,
-                        currentCycle: overallCycle
-                    ).padding(.vertical, 16)
-                }
+                CycleProgressView(
+                    progressList: progressList,
+                    overallCycle: overallCycle,
+                    currentCycle: currentCycle,
+                    globalGoal: globalGoal,
+                    cycleGoals: cycleGoals
+                )
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("현재 사이클 목표")
-                        .font(.caption)
-                    Text(cycleGoals[currentCycle?.name ?? ""]?.title ?? "사이클 목표를 설정해보세요")
-                    CycleProgressView(
-                        isOverall: false,
-                        progressList: progressList,
-                        currentCycle: currentCycle
-                    ).padding(.vertical, 16)
-                }
+                
 
                 // 날짜 조작 테스트용 버튼
                 VStack(spacing: 10) {
