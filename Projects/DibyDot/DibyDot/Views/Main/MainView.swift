@@ -18,54 +18,56 @@ struct MainView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
-                NavigationLink(
-                    destination: SettingView(
-                        globalGoal: $globalGoal,
-                        cycleGoals: $cycleGoals,
-                        currentCycleName: currentCycle?.name
-                    )
-                ) {
-                    Text("🎯 목표/회고 설정")
-                        .tint(.oceanSplash)
-                }
-
-                CycleProgressView(
-                    progressList: progressList,
-                    overallCycle: overallCycle,
-                    currentCycle: currentCycle,
-                    globalGoal: globalGoal,
-                    cycleGoals: cycleGoals
-                )
-
-                
-
-                // 날짜 조작 테스트용 버튼
-                VStack(spacing: 10) {
-                    Text("현재 날짜: \(formattedDate(currentDate))")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-
-                    HStack(spacing: 16) {
-                        Button("◀︎ 하루 전") {
-                            currentDate = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
-                        }
-                        .buttonStyle(.bordered)
-
-                        Button("하루 후 ▶︎") {
-                            currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
-                        }
-                        .buttonStyle(.bordered)
+        ZStack {
+            BubbleBackgroundView()
+            NavigationStack {
+                VStack(spacing: 20) {
+                    NavigationLink(
+                        destination: SettingView(
+                            globalGoal: $globalGoal,
+                            cycleGoals: $cycleGoals,
+                            currentCycleName: currentCycle?.name
+                        )
+                    ) {
+                        Text("🎯 목표/회고 설정")
+                            .tint(.oceanSplash)
                     }
+                    
+                    CycleProgressView(
+                        progressList: progressList,
+                        overallCycle: overallCycle,
+                        currentCycle: currentCycle,
+                        globalGoal: globalGoal,
+                        cycleGoals: cycleGoals
+                    )
+                    
+                    
+                    
+                    // 날짜 조작 테스트용 버튼
+                    VStack(spacing: 10) {
+                        Text("현재 날짜: \(formattedDate(currentDate))")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        
+                        HStack(spacing: 16) {
+                            Button("◀︎ 하루 전") {
+                                currentDate = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
+                            }
+                            .buttonStyle(.bordered)
+                            
+                            Button("하루 후 ▶︎") {
+                                currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
+                    .padding(.top, 8)
+                    
+                    Spacer()
                 }
-                .padding(.top, 8)
-
-                Spacer()
+                .padding()
+                .navigationBarTitleDisplayMode(.inline)
             }
-            .padding()
-            .navigationTitle("나의 여정")
-            .navigationBarTitleDisplayMode(.inline)
         }
     }
 
