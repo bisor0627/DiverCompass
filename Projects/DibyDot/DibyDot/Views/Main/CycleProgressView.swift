@@ -8,15 +8,14 @@ struct CycleProgressView: View {
     var body: some View {
         VStack(spacing: 8) {
             if isOverall {
-                VStack(spacing: 4) {
-                    HStack(spacing: 4) {
-                        ForEach(progressList, id: \.name) { cycle in
-                            createProgressBar(cycle: cycle)
-                        }
+            
+                HStack(spacing: 4) {
+                    ForEach(progressList, id: \.name) { cycle in
+                        createProgressBar(cycle: cycle)
                     }
-                    createProgressText(cycle: currentCycle)
                 }
-            } else {
+                createProgressText(cycle: currentCycle)
+            } else {                
                 createProgressBar(cycle: currentCycle)
                 createProgressText(cycle: currentCycle)
             }
@@ -29,22 +28,15 @@ struct CycleProgressView: View {
             let progress = cycle.progressRatio
             let color = Color.accentColor
 
-            ZStack(alignment: .center) {
-                ProgressView(value: progress)
-                    .tint(color).symbolEffect(.wiggle)
-                    
-                if cycle.isCurrent && isOverall {
-                    Image(systemName: "sailboat.fill")
-                        .foregroundColor(.indigo)
-                        .offset(y: -14).symbolEffect(.wiggle)
-                }
+                ProgressView(value: cycle.progressRatio)
+                    .tint(color)
+                    .frame(height: 20)
             }
-            .frame(height: 20)
-        } else {
+         else {
             EmptyView()
         }
     }
-    
+
     func createProgressText(cycle: CycleProgress?) -> some View {
         if let cycle = cycle {
             Text("\(Int(cycle.progressRatio * 100))% (\(cycle.daysPassed)/\(cycle.totalDays) days)")
