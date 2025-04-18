@@ -3,7 +3,7 @@ import SwiftUI
 struct MainView: View {
 
     @State private var globalGoal: GlobalGoal?
-    @State private var currentCycleGoal: CycleGoal?
+    @State private var cycleGoals: [String: CycleGoal] = [:]
 
     @State private var currentDate: Date = .now
 
@@ -23,7 +23,8 @@ struct MainView: View {
                 NavigationLink(
                     destination: SettingView(
                         globalGoal: $globalGoal,
-                        currentCycleGoal: $currentCycleGoal
+                        cycleGoals: $cycleGoals,
+                        currentCycleName: currentCycle?.name
                     )
                 ) {
                     Text("🎯 목표/회고 설정")
@@ -44,7 +45,7 @@ struct MainView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("현재 사이클 목표")
                         .font(.caption)
-                    Text(currentCycleGoal?.title ?? "사이클 목표를 설정해보세요")
+                    Text(cycleGoals[currentCycle?.name ?? ""]?.title ?? "사이클 목표를 설정해보세요")
                     CycleProgressView(
                         isOverall: false,
                         progressList: progressList,
