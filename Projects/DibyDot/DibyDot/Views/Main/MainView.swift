@@ -24,6 +24,7 @@ struct MainView: View {
                 VStack(spacing: 20) {
                     NavigationLink(
                         destination: SettingView(
+                            progressList: progressList,
                             globalGoal: $globalGoal,
                             cycleGoals: $cycleGoals,
                             currentCycleName: currentCycle?.name
