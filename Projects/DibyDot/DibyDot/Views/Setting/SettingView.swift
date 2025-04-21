@@ -4,7 +4,7 @@ struct SettingView: View {
     let cycleProgressList: [CycleProgress]
     var currentCycleId: UUID?
 
-    @Binding var overallGoal: GlobalGoal?
+    @Binding var overallGoal: CycleGoal?
     @Binding var cycleGoals: [String: CycleGoal]
 
     @State private var reflections: [Reflection] = []
@@ -124,20 +124,19 @@ struct SettingView: View {
 
         switch mode {
         case .overallGoal:
-            guard let first = kCycles.first, let last = kCycles.last else { return }
-            overallGoal = GlobalGoal(
-                id: overallGoal?.id ?? UUID(),
-                title: overallGoalText,
-                period: first.startDate...last.endDate
+
+            overallGoal = CycleGoal(
+                cycleID: kOverall.id,
+                cycleName: kOverall.name,
+                title: overallGoalText
             )
 
         case .cycleGoal:
             let selectedCycleName = cycleProgressList[selectedTabIndex].name
             cycleGoals[selectedCycleName] = CycleGoal(
-                id: cycleGoals[selectedCycleName]?.id ?? UUID(),
+                cycleID: cycleGoals[selectedCycleName]?.id ?? UUID(),
                 cycleName: selectedCycleName,
-                title: cycleGoalText,
-                createdAt: Date()
+                title: cycleGoalText
             )
 
         case .reflection:

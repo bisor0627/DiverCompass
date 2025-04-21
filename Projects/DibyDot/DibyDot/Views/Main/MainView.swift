@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MainView: View {
 
-    @State private var overallGoal: GlobalGoal?
+    @State private var overallGoal: CycleGoal?
     @State private var cycleGoals: [String: CycleGoal] = [:]
     @State private var currentDate: Date = .now
     @State private var cycleIndex: Int = kCycles.closestAccurateCycleIndex()

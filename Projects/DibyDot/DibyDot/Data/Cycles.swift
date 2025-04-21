@@ -1,5 +1,8 @@
 import Foundation
 
+let kOverall: Cycle = Cycle(name: "Overall", type: .other,
+                            startDate: DateFormatter.kst.date(from: "2025-03-10")!,
+                            endDate: DateFormatter.kst.date(from: "2025-12-12")!)
 let kCycles: [Cycle] = [
 Cycle(name: "Prelude", type: .bridge,
         startDate: DateFormatter.kst.date(from: "2025-03-10")!,
