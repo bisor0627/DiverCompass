@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingView: View {
-    let cycleProgressList: [CycleProgress]
+    let cycleList: [Cycle]
     var currentCycleId: UUID?
 
     @Binding var overallGoal: Goal?
@@ -42,7 +42,7 @@ struct SettingView: View {
                     .bold()
 
                 TabView(selection: $selectedTabIndex) {
-                    ForEach(Array(cycleProgressList.enumerated()), id: \.0) { index, cycle in
+                    ForEach(Array(cycleList.enumerated()), id: \.0) { index, cycle in
                         VStack(alignment: .leading) {
                             Text(cycle.name)
                                 .font(.headline)
@@ -89,7 +89,7 @@ struct SettingView: View {
             .padding()
             .onAppear {
                 let closestIndex = kCycles.closestAccurateCycleIndex()
-                if !cycleProgressList.isEmpty && closestIndex < cycleProgressList.count {
+                if !cycleList.isEmpty && closestIndex < cycleList.count {
                     selectedTabIndex = closestIndex
                 } else {
                     selectedTabIndex = 0
@@ -131,7 +131,7 @@ struct SettingView: View {
             )
 
         case .cycleGoal:
-            let selectedCycleName = cycleProgressList[selectedTabIndex].name
+            let selectedCycleName = cycleList[selectedTabIndex].name
             cycleGoals[selectedCycleName] = Goal(
                 cycleID: cycleGoals[selectedCycleName]?.id ?? UUID(),
                 title: cycleGoalText
@@ -162,7 +162,7 @@ struct SettingView: View {
         case .overallGoal:
             overallGoal = nil
         case .cycleGoal:
-            let selectedCycleName = cycleProgressList[selectedTabIndex].name
+            let selectedCycleName = cycleList[selectedTabIndex].name
             cycleGoals.removeValue(forKey: selectedCycleName)
         case .reflection:
             if let selected = selectedReflection {

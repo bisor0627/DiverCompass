@@ -7,11 +7,11 @@ struct MainView: View {
     @State private var currentDate: Date = .now
     @State private var cycleIndex: Int = kCycles.closestAccurateCycleIndex()
 
-    private var cycleProgressList: [CycleProgress] {
-        kCycles.generateProgressList(target: currentDate)
+    private var cycleList: [Cycle] {
+        kCycles
     }
-    private var overallCycleProgress: CycleProgress {
-        kOverall.generateProgress(target: currentDate)
+    private var overallCycle: Cycle {
+        kOverall
     }
 
     var body: some View {
@@ -21,7 +21,7 @@ struct MainView: View {
                 VStack(spacing: 20) {
                     NavigationLink(
                         destination: SettingView(
-                            cycleProgressList: cycleProgressList,
+                            cycleList: cycleList,
                             currentCycleId: kCycles[kCycles.closestAccurateCycleIndex()].id,
                             overallGoal: $overallGoal,
                             cycleGoals: $cycleGoals
@@ -32,9 +32,10 @@ struct MainView: View {
                     }
                     
                    CycleProgressView(
-                       cycleProgressList: cycleProgressList,
-                       overallCycleProgress: overallCycleProgress,
-                       cycleIndex: $cycleIndex
+                       cycleList: cycleList,
+                       overallCycle: overallCycle,
+                       cycleIndex: $cycleIndex,
+                       targetDate: $currentDate
                        
                    )
                     // 날짜 조작 테스트용 버튼
