@@ -147,8 +147,7 @@ struct SettingView: View {
                 let new = Reflection(
                     content: reflectionText,
                     createdAt: Date(),
-                    cycleNameAtWrittenTime: currentCycleName,
-                    linkedGoalID: currentCycleName.flatMap { cycleGoals[$0]?.id }
+                    cycleNameAtWrittenTime: currentCycleName
                 )
                 reflections.insert(new, at: 0)
             }
