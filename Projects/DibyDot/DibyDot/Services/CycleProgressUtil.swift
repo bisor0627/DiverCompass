@@ -18,8 +18,8 @@ struct CycleProgressUtil {
         }
     }
 
-    static func currentCycle(from progressList: [CycleProgress]) -> CycleProgress? {
-        return progressList.first(where: { $0.isCurrent })
+    static func currentCycle(from cycleProgressList: [CycleProgress]) -> CycleProgress? {
+        return cycleProgressList.first(where: { $0.isCurrent })
     }
 }
 

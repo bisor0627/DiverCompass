@@ -1,34 +1,33 @@
 import SwiftUI
 
 struct CycleProgressView: View {
-    let progressList: [CycleProgress]
-    let overallCycle: CycleProgress
+    let cycleProgressList: [CycleProgress]
+    let overallCycleProgress: CycleProgress
     
-    @State private var selectedCycle: Int
-    @State private var showOverall: Bool
+    @Binding private var cycleIndex: Int
+    @State private var showOverall: Bool = true
 
-    init(progressList: [CycleProgress], overallCycle: CycleProgress) {
-        self.progressList = progressList
-        self.overallCycle = overallCycle
-        self.selectedCycle = kCycles.closestUpcomingCycleIndex()
-        self.showOverall = true
-    }
+init(cycleProgressList: [CycleProgress], overallCycleProgress: CycleProgress, cycleIndex: Binding<Int>) {
+    self.cycleProgressList = cycleProgressList
+    self.overallCycleProgress = overallCycleProgress
+    self._cycleIndex = cycleIndex
+}
         
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
                     if showOverall {
                         VStack{
                             HStack(spacing: 4) {
-                                ForEach(progressList, id: \.name) { cycle in
+                                ForEach(cycleProgressList, id: \.name) { cycle in
                                     createProgressBar(cycle: cycle)
                                 }
                             }
-                            createProgressText(cycle: overallCycle)
+                            createProgressText(cycle: overallCycleProgress)
                         }
                         .frame(height: 70)
                     } else {
-                        TabView(selection: $selectedCycle) {
-                            ForEach(Array(progressList.enumerated()), id: \.0) { index, cycle in  
+                        TabView(selection: $cycleIndex) {
+                            ForEach(Array(cycleProgressList.enumerated()), id: \.0) { index, cycle in  
                                     VStack(alignment: .leading) {
                                         Text(cycle.name)
                                             .font(.caption)
