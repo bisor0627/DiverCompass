@@ -27,17 +27,17 @@ struct MainView: View {
                             progressList: progressList,
                             globalGoal: $globalGoal,
                             cycleGoals: $cycleGoals,
-                            currentCycleName: currentCycle?.name
+                            currentCycleId: kCycles[kCycles.closestUpcomingCycleIndex()].id
                         )
                     ) {
                         Text("🎯 목표/회고 설정")
                             .tint(.oceanSplash)
                     }
                     
-                    CycleProgressView(
-                        progressList: progressList,
-                        overallCycle: overallCycle
-                    )
+                   CycleProgressView(
+                       progressList: progressList,
+                       overallCycle: overallCycle
+                   )
                     // 날짜 조작 테스트용 버튼
                     VStack(spacing: 10) {
                         Text("현재 날짜: \(formattedDate(currentDate))")

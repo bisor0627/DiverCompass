@@ -13,13 +13,13 @@ struct Reflection: Identifiable, Codable, Equatable {
     var content: String
     let createdAt: Date  // 생성 시간은 불변이어야 함
 
-    /// 이 회고가 작성된 날짜가 속한 사이클의 이름
-    var cycleNameAtWrittenTime: String?
+    /// 이 회고가 작성된 날짜가 속한 사이클
+    var cycleID: UUID?
     
-    init(id: UUID = UUID(), content: String, createdAt: Date = Date(), cycleNameAtWrittenTime: String? = nil, linkedGoalID: UUID? = nil) {
+    init(id: UUID = UUID(), content: String, createdAt: Date = Date(), cycleID: UUID? = nil) {
         self.id = id
         self.content = content
         self.createdAt = createdAt
-        self.cycleNameAtWrittenTime = cycleNameAtWrittenTime
+        self.cycleID = cycleID
     }
 }

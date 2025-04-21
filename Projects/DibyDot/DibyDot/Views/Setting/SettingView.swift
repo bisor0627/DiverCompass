@@ -5,7 +5,7 @@ struct SettingView: View {
 
     @Binding var globalGoal: GlobalGoal?
     @Binding var cycleGoals: [String: CycleGoal]
-    var currentCycleName: String?
+    var currentCycleId: UUID?
 
     @State private var reflections: [Reflection] = []
 
@@ -147,7 +147,7 @@ struct SettingView: View {
                 let new = Reflection(
                     content: reflectionText,
                     createdAt: Date(),
-                    cycleNameAtWrittenTime: currentCycleName
+                    cycleID: currentCycleId
                 )
                 reflections.insert(new, at: 0)
             }
@@ -211,7 +211,7 @@ struct ReflectionBubble: View {
                 Text(reflection.content)
                     .font(.body)
 
-                if let cycle = reflection.cycleNameAtWrittenTime {
+                if let cycle = reflection.cycleID {
                     Text("📍 \(cycle)")
                         .font(.caption2)
                         .foregroundColor(.blue)
