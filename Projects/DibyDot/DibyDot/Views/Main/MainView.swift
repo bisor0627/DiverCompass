@@ -2,18 +2,15 @@ import SwiftUI
 
 struct MainView: View {
 
-    @State private var globalGoal: GlobalGoal?
+    @State private var overallGoal: GlobalGoal?
     @State private var cycleGoals: [String: CycleGoal] = [:]
-
     @State private var currentDate: Date = .now
+    @State private var cycleIndex: Int = kCycles.closestAccurateCycleIndex()
 
-    private var progressList: [CycleProgress] {
+    private var cycleProgressList: [CycleProgress] {
         CycleProgressUtil.generateProgressList(from: kCycles, today: currentDate)
     }
-    private var currentCycle: CycleProgress? {
-        CycleProgressUtil.currentCycle(from: progressList)
-    }
-    private var overallCycle: CycleProgress {
+    private var overallCycleProgress: CycleProgress {
         CycleProgressUtil.overallProgress(from: kCycles, today: currentDate)
     }
 
@@ -24,10 +21,10 @@ struct MainView: View {
                 VStack(spacing: 20) {
                     NavigationLink(
                         destination: SettingView(
-                            progressList: progressList,
-                            globalGoal: $globalGoal,
-                            cycleGoals: $cycleGoals,
-                            currentCycleId: kCycles[kCycles.closestUpcomingCycleIndex()].id
+                            cycleProgressList: cycleProgressList,
+                            currentCycleId: kCycles[kCycles.closestAccurateCycleIndex()].id,
+                            overallGoal: $overallGoal,
+                            cycleGoals: $cycleGoals
                         )
                     ) {
                         Text("🎯 목표/회고 설정")
@@ -35,8 +32,10 @@ struct MainView: View {
                     }
                     
                    CycleProgressView(
-                       progressList: progressList,
-                       overallCycle: overallCycle
+                       cycleProgressList: cycleProgressList,
+                       overallCycleProgress: overallCycleProgress,
+                       cycleIndex: $cycleIndex
+                       
                    )
                     // 날짜 조작 테스트용 버튼
                     VStack(spacing: 10) {
@@ -46,10 +45,12 @@ struct MainView: View {
                         HStack(spacing: 16) {
                             Button("◀︎ 하루 전") {
                                 currentDate = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
+                                    cycleIndex = kCycles.closestAccurateCycleIndex(from: currentDate)
                             }
                             .buttonStyle(.bordered)
                             Button("하루 후 ▶︎") {
                                 currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+                                    cycleIndex = kCycles.closestAccurateCycleIndex(from: currentDate)
                             }
                             .buttonStyle(.bordered)
                         }

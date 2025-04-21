@@ -1,18 +1,20 @@
 import SwiftUI
 
 struct SettingView: View {
-    let progressList: [CycleProgress]
-
-    @Binding var globalGoal: GlobalGoal?
-    @Binding var cycleGoals: [String: CycleGoal]
+    let cycleProgressList: [CycleProgress]
     var currentCycleId: UUID?
+
+    @Binding var overallGoal: GlobalGoal?
+    @Binding var cycleGoals: [String: CycleGoal]
 
     @State private var reflections: [Reflection] = []
 
     @State private var popupMode: PopupCardMode?
-    @State private var globalGoalText = ""
+
+    @State private var overallGoalText = ""
     @State private var cycleGoalText = ""
     @State private var reflectionText = ""
+
     @State private var selectedReflection: Reflection?
     @State private var selectedTabIndex: Int = 0
 
@@ -27,11 +29,11 @@ struct SettingView: View {
                     .bold()
 
                 GoalInputBubble(
-                    text: globalGoal?.title ?? "나의 여정을 어떻게 마무리하고 싶나요?",
-                    isPlaceholder: globalGoal == nil,
+                    text: overallGoal?.title ?? "나의 여정을 어떻게 마무리하고 싶나요?",
+                    isPlaceholder: overallGoal == nil,
                     onTap: {
-                        popupMode = .globalGoal
-                        globalGoalText = globalGoal?.title ?? ""
+                        popupMode = .overallGoal
+                        overallGoalText = overallGoal?.title ?? ""
                     }
                 )
 
@@ -40,7 +42,7 @@ struct SettingView: View {
                     .bold()
 
                 TabView(selection: $selectedTabIndex) {
-                    ForEach(Array(progressList.enumerated()), id: \.0) { index, cycle in
+                    ForEach(Array(cycleProgressList.enumerated()), id: \.0) { index, cycle in
                         VStack(alignment: .leading) {
                             Text(cycle.name)
                                 .font(.headline)
@@ -86,8 +88,8 @@ struct SettingView: View {
             }
             .padding()
             .onAppear {
-                let closestIndex = kCycles.closestUpcomingCycleIndex()
-                if !progressList.isEmpty && closestIndex < progressList.count {
+                let closestIndex = kCycles.closestAccurateCycleIndex()
+                if !cycleProgressList.isEmpty && closestIndex < cycleProgressList.count {
                     selectedTabIndex = closestIndex
                 } else {
                     selectedTabIndex = 0
@@ -110,7 +112,7 @@ struct SettingView: View {
 
     private func bindingText(for mode: PopupCardMode?) -> Binding<String> {
         switch mode {
-        case .globalGoal: return $globalGoalText
+        case .overallGoal: return $overallGoalText
         case .cycleGoal: return $cycleGoalText
         case .reflection: return $reflectionText
         case .none: return .constant("")
@@ -121,16 +123,16 @@ struct SettingView: View {
         guard let mode = popupMode else { return }
 
         switch mode {
-        case .globalGoal:
+        case .overallGoal:
             guard let first = kCycles.first, let last = kCycles.last else { return }
-            globalGoal = GlobalGoal(
-                id: globalGoal?.id ?? UUID(),
-                title: globalGoalText,
+            overallGoal = GlobalGoal(
+                id: overallGoal?.id ?? UUID(),
+                title: overallGoalText,
                 period: first.startDate...last.endDate
             )
 
         case .cycleGoal:
-            let selectedCycleName = progressList[selectedTabIndex].name
+            let selectedCycleName = cycleProgressList[selectedTabIndex].name
             cycleGoals[selectedCycleName] = CycleGoal(
                 id: cycleGoals[selectedCycleName]?.id ?? UUID(),
                 cycleName: selectedCycleName,
@@ -161,10 +163,10 @@ struct SettingView: View {
         guard let mode = popupMode else { return }
 
         switch mode {
-        case .globalGoal:
-            globalGoal = nil
+        case .overallGoal:
+            overallGoal = nil
         case .cycleGoal:
-            let selectedCycleName = progressList[selectedTabIndex].name
+            let selectedCycleName = cycleProgressList[selectedTabIndex].name
             cycleGoals.removeValue(forKey: selectedCycleName)
         case .reflection:
             if let selected = selectedReflection {
@@ -251,7 +253,7 @@ extension View {
                 PopupCardView(
                     isPresented: isPresented,
                     text: text,
-                    mode: mode ?? .globalGoal,
+                    mode: mode ?? .overallGoal,
                     onSave: onSave,
                     onDelete: onDelete
                 )
@@ -262,19 +264,18 @@ extension View {
     }
 }
 extension Array where Element == Cycle {
-    /// 오늘 포함으로 가장 가까운 이후 Cycle의 index 반환
-    /// - Returns: 오늘 포함되는 Cycle 또는 가장 가까운 미래 Cycle의 index (없으면 마지막 index)
-    func closestUpcomingCycleIndex(from today: Date = .now) -> Int {
-        // 1️⃣ 오늘이 포함된 Cycle이 있다면
-        if let currentIndex = self.firstIndex(where: { $0.dateRange.contains(today) }) {
-            return currentIndex
+    /// 기준 날짜가 속한 Cycle 또는 가장 가까운 미래 Cycle의 index 반환
+    func closestAccurateCycleIndex(from date: Date = .now) -> Int {
+        // 1️⃣ 날짜가 포함된 Cycle 우선
+        if let matchIndex = self.firstIndex(where: { $0.dateRange.contains(date) }) {
+            return matchIndex
         }
 
-        // 2️⃣ 오늘 이후 시작되는 Cycle 중 가장 가까운 것
-        if let (index, _) = self.enumerated()
-            .filter({ $0.element.startDate > today })
-            .min(by: { $0.element.startDate < $1.element.startDate }) {
-            return index
+        // 2️⃣ 미래 시작일 중 가장 가까운 Cycle
+        if let futureIndex = self.enumerated()
+            .filter({ $0.element.startDate > date }) // 오늘보다 이후
+            .min(by: { $0.element.startDate < $1.element.startDate })?.offset {
+            return futureIndex
         }
 
         // 3️⃣ 모든 Cycle이 지난 경우
