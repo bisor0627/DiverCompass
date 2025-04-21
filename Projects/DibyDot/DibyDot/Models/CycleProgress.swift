@@ -20,3 +20,29 @@ struct CycleProgress: Codable, Equatable {
         self.isCurrent = isCurrent
     }
 }
+
+
+extension Array where Element == Cycle {
+    func generateProgressList(today: Date = .now) -> [CycleProgress] {
+        return self.map { cycle in
+            return cycle.generateProgress(today: today)
+        }
+    }
+}
+
+extension Cycle {
+    func generateProgress(today: Date = .now) -> CycleProgress {
+        let totalDays = Calendar.current.dateComponents([.day], from: self.startDate, to: self.endDate).day! + 1
+        let daysPassed = Swift.max(0, Swift.min(Calendar.current.dateComponents([.day], from: self.startDate, to: today).day! + 1, totalDays))
+        let ratio = Double(daysPassed) / Double(totalDays)
+        let isCurrent = (self.startDate...self.endDate).contains(today)
+
+        return CycleProgress(
+            name: self.name,
+            progressRatio: ratio,
+            daysPassed: daysPassed,
+            totalDays: totalDays,
+            isCurrent: isCurrent
+            )
+        }
+    }

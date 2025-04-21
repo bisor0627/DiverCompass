@@ -4,8 +4,8 @@ struct SettingView: View {
     let cycleProgressList: [CycleProgress]
     var currentCycleId: UUID?
 
-    @Binding var overallGoal: CycleGoal?
-    @Binding var cycleGoals: [String: CycleGoal]
+    @Binding var overallGoal: Goal?
+    @Binding var cycleGoals: [String: Goal]
 
     @State private var reflections: [Reflection] = []
 
@@ -125,17 +125,15 @@ struct SettingView: View {
         switch mode {
         case .overallGoal:
 
-            overallGoal = CycleGoal(
+            overallGoal = Goal(
                 cycleID: kOverall.id,
-                cycleName: kOverall.name,
                 title: overallGoalText
             )
 
         case .cycleGoal:
             let selectedCycleName = cycleProgressList[selectedTabIndex].name
-            cycleGoals[selectedCycleName] = CycleGoal(
+            cycleGoals[selectedCycleName] = Goal(
                 cycleID: cycleGoals[selectedCycleName]?.id ?? UUID(),
-                cycleName: selectedCycleName,
                 title: cycleGoalText
             )
 
@@ -147,7 +145,6 @@ struct SettingView: View {
             } else {
                 let new = Reflection(
                     content: reflectionText,
-                    createdAt: Date(),
                     cycleID: currentCycleId
                 )
                 reflections.insert(new, at: 0)
