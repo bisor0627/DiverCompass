@@ -3,51 +3,51 @@ import SwiftUI
 struct CycleProgressView: View {
     let progressList: [CycleProgress]
     let overallCycle: CycleProgress
-    let currentCycle: CycleProgress?
+    
+    @State private var selectedCycle: Int
+    @State private var showOverall: Bool
 
-    let globalGoal: GlobalGoal?
-    let cycleGoals: [String: CycleGoal]
-
-    @State private var showOverall: Bool = true
-
+    init(progressList: [CycleProgress], overallCycle: CycleProgress) {
+        self.progressList = progressList
+        self.overallCycle = overallCycle
+        self.selectedCycle = kCycles.closestUpcomingCycleIndex()
+        self.showOverall = true
+    }
+        
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-                Text(showOverall ? "전체 목표" : "현재 사이클 목표")
-                    .font(.caption)
-                Text(goalTitle)
-                    .font(.body)
                     if showOverall {
-                        // 전체 사이클 진행률
+                        VStack{
                             HStack(spacing: 4) {
                                 ForEach(progressList, id: \.name) { cycle in
-                                createProgressBar(cycle: cycle)
-                             }
+                                    createProgressBar(cycle: cycle)
+                                }
                             }
-                        createProgressText(cycle: overallCycle)
+                            createProgressText(cycle: overallCycle)
+                        }
+                        .frame(height: 70)
                     } else {
-                        // 현재 사이클 진행률
-                        createProgressBar(cycle: currentCycle)
-                        createProgressText(cycle: currentCycle)
+                        TabView(selection: $selectedCycle) {
+                            ForEach(Array(progressList.enumerated()), id: \.0) { index, cycle in  
+                                    VStack(alignment: .leading) {
+                                        Text(cycle.name)
+                                            .font(.caption)
+                                            .bold()
+                                        createProgressBar(cycle: cycle)
+                                        createProgressText(cycle: cycle)
+                                    }.tag(index)
+                                }
+                        }
+                        .frame(height: 70)
+                        .tabViewStyle(.page(indexDisplayMode: .never))
+                        .background(.clear)
+                        .cornerRadius(12)
                     }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onTapGesture {
             withAnimation {
                 showOverall.toggle()
-            }
-        }
-        
-    }
-
-    private var goalTitle: String {
-        if showOverall {
-            return globalGoal?.title ?? "목표가 아직 없어요!"
-        } else {
-            if let name = currentCycle?.name,
-               let goal = cycleGoals[name] {
-                return goal.title
-            } else {
-                return "사이클 목표를 설정해보세요"
             }
         }
     }
