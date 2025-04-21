@@ -1,23 +1,53 @@
 import SwiftUI
 
 struct CycleProgressView: View {
-    let isOverall: Bool
     let progressList: [CycleProgress]
-    let currentCycle: CycleProgress?
+    let overallCycle: CycleProgress
+    
+    @State private var selectedCycle: Int
+    @State private var showOverall: Bool
 
+    init(progressList: [CycleProgress], overallCycle: CycleProgress) {
+        self.progressList = progressList
+        self.overallCycle = overallCycle
+        self.selectedCycle = kCycles.closestUpcomingCycleIndex()
+        self.showOverall = true
+    }
+        
     var body: some View {
-        VStack(spacing: 8) {
-            if isOverall {
-            
-                HStack(spacing: 4) {
-                    ForEach(progressList, id: \.name) { cycle in
-                        createProgressBar(cycle: cycle)
+        VStack(alignment: .leading, spacing: 4) {
+                    if showOverall {
+                        VStack{
+                            HStack(spacing: 4) {
+                                ForEach(progressList, id: \.name) { cycle in
+                                    createProgressBar(cycle: cycle)
+                                }
+                            }
+                            createProgressText(cycle: overallCycle)
+                        }
+                        .frame(height: 70)
+                    } else {
+                        TabView(selection: $selectedCycle) {
+                            ForEach(Array(progressList.enumerated()), id: \.0) { index, cycle in  
+                                    VStack(alignment: .leading) {
+                                        Text(cycle.name)
+                                            .font(.caption)
+                                            .bold()
+                                        createProgressBar(cycle: cycle)
+                                        createProgressText(cycle: cycle)
+                                    }.tag(index)
+                                }
+                        }
+                        .frame(height: 70)
+                        .tabViewStyle(.page(indexDisplayMode: .never))
+                        .background(.clear)
+                        .cornerRadius(12)
                     }
-                }
-                createProgressText(cycle: currentCycle)
-            } else {                
-                createProgressBar(cycle: currentCycle)
-                createProgressText(cycle: currentCycle)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onTapGesture {
+            withAnimation {
+                showOverall.toggle()
             }
         }
     }
@@ -25,30 +55,22 @@ struct CycleProgressView: View {
     @ViewBuilder
     func createProgressBar(cycle: CycleProgress?) -> some View {
         if let cycle = cycle {
-            let progress = cycle.progressRatio
-            let color = Color.accentColor
-
-                ProgressView(value: cycle.progressRatio)
-                    .tint(color)
-                    .frame(height: 20)
-            }
-         else {
+            ProgressView(value: cycle.progressRatio)
+                .tint(Color.accentColor)
+                .frame(height: 20)
+        } else {
             EmptyView()
         }
     }
-
+    
+    @ViewBuilder
     func createProgressText(cycle: CycleProgress?) -> some View {
         if let cycle = cycle {
-            Text("\(Int(cycle.progressRatio * 100))% (\(cycle.daysPassed)/\(cycle.totalDays) days)")
+            Text("\(cycle.progressPercentage)% (\(cycle.daysPassed)/\(cycle.totalDays) days)")
                 .font(.caption)
                 .foregroundColor(.secondary)
         } else {
-            Text("현재 진행 중인 사이클이 없습니다.")
-                .font(.caption)
-                .foregroundColor(.gray)
+            EmptyView()
         }
     }
 }
-
-
-
