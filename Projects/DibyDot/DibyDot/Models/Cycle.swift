@@ -7,14 +7,6 @@ struct Cycle: Identifiable {
     let startDate: Date
     let endDate: Date
     
-    var dateRange: ClosedRange<Date> {
-        startDate...endDate
-    }
-    
-    var totalDays: Int {
-        Calendar.current.dateComponents([.day], from: startDate, to: endDate).day! + 1
-    }
-    
     init(name: String, type: CycleType, startDate: Date, endDate: Date) {
         self.name = name
         self.type = type

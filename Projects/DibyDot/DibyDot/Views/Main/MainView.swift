@@ -8,10 +8,10 @@ struct MainView: View {
     @State private var cycleIndex: Int = kCycles.closestAccurateCycleIndex()
 
     private var cycleProgressList: [CycleProgress] {
-        kCycles.generateProgressList(today: currentDate)
+        kCycles.generateProgressList(target: currentDate)
     }
     private var overallCycleProgress: CycleProgress {
-        kOverall.generateProgress(today: currentDate)
+        kOverall.generateProgress(target: currentDate)
     }
 
     var body: some View {
