@@ -15,15 +15,11 @@ struct Reflection: Identifiable, Codable, Equatable {
 
     /// 이 회고가 작성된 날짜가 속한 사이클의 이름
     var cycleNameAtWrittenTime: String?
-
-    /// 연결된 목표가 있을 경우 (CycleGoal 또는 GlobalGoal의 ID가 될 수 있음)
-    var linkedGoalID: UUID?
     
     init(id: UUID = UUID(), content: String, createdAt: Date = Date(), cycleNameAtWrittenTime: String? = nil, linkedGoalID: UUID? = nil) {
         self.id = id
         self.content = content
         self.createdAt = createdAt
         self.cycleNameAtWrittenTime = cycleNameAtWrittenTime
-        self.linkedGoalID = linkedGoalID
     }
 }
