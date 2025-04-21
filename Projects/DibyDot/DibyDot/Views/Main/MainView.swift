@@ -2,16 +2,16 @@ import SwiftUI
 
 struct MainView: View {
 
-    @State private var overallGoal: CycleGoal?
-    @State private var cycleGoals: [String: CycleGoal] = [:]
+    @State private var overallGoal: Goal?
+    @State private var cycleGoals: [String: Goal] = [:]
     @State private var currentDate: Date = .now
     @State private var cycleIndex: Int = kCycles.closestAccurateCycleIndex()
 
     private var cycleProgressList: [CycleProgress] {
-        CycleProgressUtil.generateProgressList(from: kCycles, today: currentDate)
+        kCycles.generateProgressList(today: currentDate)
     }
     private var overallCycleProgress: CycleProgress {
-        CycleProgressUtil.overallProgress(from: kCycles, today: currentDate)
+        kOverall.generateProgress(today: currentDate)
     }
 
     var body: some View {

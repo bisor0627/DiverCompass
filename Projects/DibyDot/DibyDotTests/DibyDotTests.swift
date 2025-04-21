@@ -19,7 +19,7 @@ final class GoalTests: XCTestCase {
     }
 
     func testCycleGoalCreation() {
-        let goal = CycleGoal(
+        let goal = Goal(
             id: UUID(),
             cycleName: "Challenge 2",
             title: "마음을 지키는 연습",
