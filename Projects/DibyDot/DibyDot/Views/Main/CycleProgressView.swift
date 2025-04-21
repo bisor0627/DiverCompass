@@ -1,16 +1,18 @@
 import SwiftUI
 
 struct CycleProgressView: View {
-    let cycleProgressList: [CycleProgress]
-    let overallCycleProgress: CycleProgress
+    let cycleList: [Cycle]
+    let overallCycle: Cycle
+    @Binding private var targetDate: Date
     
     @Binding private var cycleIndex: Int
     @State private var showOverall: Bool = true
 
-init(cycleProgressList: [CycleProgress], overallCycleProgress: CycleProgress, cycleIndex: Binding<Int>) {
-    self.cycleProgressList = cycleProgressList
-    self.overallCycleProgress = overallCycleProgress
+init(cycleList: [Cycle], overallCycle: Cycle, cycleIndex: Binding<Int>, targetDate: Binding<Date>) {
+    self.cycleList = cycleList
+    self.overallCycle = overallCycle
     self._cycleIndex = cycleIndex
+    self._targetDate = targetDate
 }
         
     var body: some View {
@@ -18,16 +20,16 @@ init(cycleProgressList: [CycleProgress], overallCycleProgress: CycleProgress, cy
                     if showOverall {
                         VStack{
                             HStack(spacing: 4) {
-                                ForEach(cycleProgressList, id: \.name) { cycle in
+                                ForEach(cycleList, id: \.name) { cycle in
                                     createProgressBar(cycle: cycle)
                                 }
                             }
-                            createProgressText(cycle: overallCycleProgress)
+                            createProgressText(cycle: overallCycle)
                         }
                         .frame(height: 70)
                     } else {
                         TabView(selection: $cycleIndex) {
-                            ForEach(Array(cycleProgressList.enumerated()), id: \.0) { index, cycle in  
+                            ForEach(Array(cycleList.enumerated()), id: \.0) { index, cycle in  
                                     VStack(alignment: .leading) {
                                         Text(cycle.name)
                                             .font(.caption)
@@ -52,9 +54,9 @@ init(cycleProgressList: [CycleProgress], overallCycleProgress: CycleProgress, cy
     }
 
     @ViewBuilder
-    func createProgressBar(cycle: CycleProgress?) -> some View {
+    func createProgressBar(cycle: Cycle?) -> some View {
         if let cycle = cycle {
-            ProgressView(value: cycle.progressRatio)
+            ProgressView(value: cycle.progressRatio(target: targetDate))
                 .tint(Color.accentColor)
                 .frame(height: 20)
         } else {
@@ -63,9 +65,9 @@ init(cycleProgressList: [CycleProgress], overallCycleProgress: CycleProgress, cy
     }
     
     @ViewBuilder
-    func createProgressText(cycle: CycleProgress?) -> some View {
+    func createProgressText(cycle: Cycle?) -> some View {
         if let cycle = cycle {
-            Text("\(cycle.progressPercentage)% (\(cycle.daysPassed)/\(cycle.totalDays) days)")
+            Text("\(cycle.progressPercentage(target: targetDate))%\t \(cycle.daysPassed(target: targetDate))/\(cycle.totalDays) days\t Remaining... \(cycle.daysRemaining(target: targetDate)) days")
                 .font(.caption)
                 .foregroundColor(.secondary)
         } else {
