@@ -41,31 +41,7 @@ struct SettingView: View {
                     .font(.title3)
                     .bold()
 
-                TabView(selection: $selectedCycleId) {
-                    ForEach(Array(cycles.enumerated()), id: \.1.id) { index, cycle in
-                        let goal = cycleGoals.first(where: { $0.cycleID == cycle.id })
-
-                        VStack(alignment: .leading) {
-                            Text(cycle.name)
-                                .font(.headline)
-                                .bold()
-                            GoalInputBubble(
-                                text: goal?.title ?? "\(cycle.name)의 목표를 입력해주세요",
-                                isPlaceholder: goal == nil,
-                                onTap: {
-                                    cycleIndex = index
-                                    popupMode = .cycleGoal
-                                    cycleGoalText = goal?.title ?? ""
-                                }
-                            )
-                        }
-                        .tag(cycle.id)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: 70)
-                .background(.thinMaterial)
-                .cornerRadius(12)
+                cycleTabView
 
                 Section(header: Text("회고 작성하기").bold()) {
                     Button("+ 회고 작성") {
@@ -75,28 +51,11 @@ struct SettingView: View {
                     }
                 }
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 12) {
-                        ForEach(reflections.reversed()) { reflection in
-                            ReflectionBubble(reflection: reflection) {
-                                selectedReflection = reflection
-                                reflectionText = reflection.content
-                                popupMode = .reflection
-                            }
-                        }
-                    }
-                }
+                reflectionListView
             }
             .padding()
             .onAppear {
-                let closestIndex = cycles.closestAccurateCycleIndex()
-                if !cycles.isEmpty && closestIndex < cycles.count {
-                    cycleIndex = closestIndex
-                    selectedCycleId = cycles[closestIndex].id
-                } else {
-                    cycleIndex = 0
-                    selectedCycleId = cycles.first?.id ?? UUID()
-                }
+                updateCycleSelection()
             }
             .onChange(of: selectedCycleId) { newValue in
                 if let newIndex = cycles.firstIndex(where: { $0.id == newValue }) {
@@ -126,7 +85,6 @@ struct SettingView: View {
         case .none: return .constant("")
         }
     }
-
 
     private func handleSave() {
         guard let mode = popupMode else { return }
@@ -185,9 +143,59 @@ struct SettingView: View {
         popupMode = nil
         selectedReflection = nil
     }
+
+    private func updateCycleSelection() {
+        let closestIndex = cycles.closestAccurateCycleIndex()
+        if !cycles.isEmpty && closestIndex < cycles.count {
+            cycleIndex = closestIndex
+            selectedCycleId = cycles[closestIndex].id
+        } else {
+            cycleIndex = 0
+            selectedCycleId = cycles.first?.id ?? UUID()
+        }
+    }
+
+    private var cycleTabView: some View {
+        TabView(selection: $selectedCycleId) {
+            ForEach(Array(cycles.enumerated()), id: \.1.id) { index, cycle in
+                let goal = cycleGoals.first(where: { $0.cycleID == cycle.id })
+                VStack(alignment: .leading) {
+                    Text(cycle.name)
+                        .font(.headline)
+                        .bold()
+                    GoalInputBubble(
+                        text: goal?.title ?? "\(cycle.name)의 목표를 입력해주세요",
+                        isPlaceholder: goal == nil,
+                        onTap: {
+                            cycleIndex = index
+                            popupMode = .cycleGoal
+                            cycleGoalText = goal?.title ?? ""
+                        }
+                    )
+                }
+                .tag(cycle.id)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .frame(height: 70)
+        .background(.thinMaterial)
+        .cornerRadius(12)
+    }
+
+    private var reflectionListView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(reflections.reversed()) { reflection in
+                    ReflectionBubble(reflection: reflection) {
+                        selectedReflection = reflection
+                        reflectionText = reflection.content
+                        popupMode = .reflection
+                    }
+                }
+            }
+        }
+    }
 }
-
-
 
 struct GoalInputBubble: View {
     let text: String

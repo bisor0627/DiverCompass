@@ -45,15 +45,11 @@ struct MainView: View {
                             .foregroundColor(.secondary)
                         HStack(spacing: 16) {
                             Button("◀︎ 하루 전") {
-                                currentDate = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
-                                cycleIndex = cycles.closestAccurateCycleIndex(from: currentDate)
-                                
+                                updateDate(by: -1)
                             }
                             .buttonStyle(.bordered)
                             Button("하루 후 ▶︎") {
-                                currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
-                                cycleIndex = cycles.closestAccurateCycleIndex(from: currentDate)
-                                
+                                updateDate(by: 1)
                             }
                             .buttonStyle(.bordered)
                         }
@@ -66,6 +62,11 @@ struct MainView: View {
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
+    }
+
+    private func updateDate(by days: Int) {
+        currentDate = Calendar.current.date(byAdding: .day, value: days, to: currentDate) ?? currentDate
+        cycleIndex = cycles.closestAccurateCycleIndex(from: currentDate)
     }
 
     private func formattedDate(_ date: Date) -> String {

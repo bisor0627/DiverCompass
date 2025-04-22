@@ -1,57 +1,34 @@
 import SwiftUI
 
 struct CycleProgressView: View {
-    @Binding  var cycles: [Cycle]
-    @Binding  var overall: Cycle
+    @Binding var cycles: [Cycle]
+    @Binding var overall: Cycle
     @Binding var targetDate: Date
-
-    
-    @Binding  var overallGoal: Goal?
-    @Binding  var cycleGoals: [Goal]
+    @Binding var overallGoal: Goal?
+    @Binding var cycleGoals: [Goal]
     
     @State private var showOverall: Bool = true
     @State private var selectedCycleId: UUID?
     
-    init(cycles: Binding<[Cycle]>, overall: Binding<Cycle>, targetDate: Binding<Date>, overallGoal: Binding<Goal?>, cycleGoals: Binding<[Goal]>) {
+    init(cycles: Binding<[Cycle]>,
+         overall: Binding<Cycle>,
+         targetDate: Binding<Date>,
+         overallGoal: Binding<Goal?>,
+         cycleGoals: Binding<[Goal]>) {
         self._cycles = cycles
         self._overall = overall
         self._targetDate = targetDate
-        self._cycleGoals = cycleGoals
         self._overallGoal = overallGoal
+        self._cycleGoals = cycleGoals
     }
-        
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-                    if showOverall {
-                        
-                        VStack{
-                            Text(overallGoal?.title ?? "전체 목표를 설정해보세요")
-                                            .font(.body)
-                            HStack(spacing: 4) {
-                                ForEach(cycles, id: \.id) {
-                                    cycle in
-                                      createProgressBar(cycle: cycle)
-                                }
-                            }
-                            createProgressText(cycle: overall)
-                        }
-                        .frame(height: 80)
-                    } else {
-                        TabView(selection: $selectedCycleId) {
-                            ForEach(Array(cycles.enumerated()), id: \.1.id) { index, cycle in
-                                VStack(alignment: .leading) {
-                                    goalView(for: cycle)
-                                    createProgressBar(cycle: cycle)
-                                    createProgressText(cycle: cycle)
-                                }
-                                .tag(cycle.id)
-                            }
-                        }
-                      
-                        .frame(height: 80)
-                        .tabViewStyle(.page(indexDisplayMode: .never))
-                        .background(.clear)
-                    }
+            if showOverall {
+                overallProgressView
+            } else {
+                cycleProgressTabView
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onTapGesture {
@@ -59,24 +36,55 @@ struct CycleProgressView: View {
                 showOverall.toggle()
             }
         }
-        .onAppear {
-            let index = cycles.closestAccurateCycleIndex(from: targetDate)
-            if index >= 0 && index < cycles.count {
-                selectedCycleId = cycles[index].id
-            }
-        }
+        .onAppear(perform: updateSelectedCycle)
         .onChange(of: targetDate) { newDate in
-            let index = cycles.closestAccurateCycleIndex(from: newDate)
-            if index >= 0 && index < cycles.count {
-                selectedCycleId = cycles[index].id
-            }
+            updateSelectedCycle()
         }
     }
+    
+    private var overallProgressView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(overallGoal?.title ?? "전체 목표를 설정해보세요")
+                .font(.body)
+            HStack(spacing: 4) {
+                ForEach(cycles, id: \.id) { cycle in
+                    progressBar(for: cycle)
+                }
+            }
+            progressText(for: overall)
+        }
+        .frame(height: 80)
+    }
+    
+    private var cycleProgressTabView: some View {
+        TabView(selection: $selectedCycleId) {
+            ForEach(cycles, id: \.id) { cycle in
+                VStack(alignment: .leading, spacing: 4) {
+                    goalView(for: cycle)
+                    progressBar(for: cycle)
+                    progressText(for: cycle)
+                }
+                .tag(cycle.id)
+            }
+        }
+        .frame(height: 80)
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+        .background(Color.clear)
+    }
+    
+    private func updateSelectedCycle() {
+        let index = cycles.closestAccurateCycleIndex(from: targetDate)
+        if index >= 0 && index < cycles.count {
+            selectedCycleId = cycles[index].id
+        }
+    }
+    
     private func goalForCycle(_ cycle: Cycle) -> Goal? {
-         return cycleGoals.first(where: { $0.cycleID == cycle.id })
-     }
+        cycleGoals.first(where: { $0.cycleID == cycle.id })
+    }
+    
     @ViewBuilder
-    func goalView(for cycle: Cycle) -> some View {
+    private func goalView(for cycle: Cycle) -> some View {
         if let goal = goalForCycle(cycle) {
             Text(goal.title)
                 .font(.body)
@@ -88,7 +96,7 @@ struct CycleProgressView: View {
     }
     
     @ViewBuilder
-    func createProgressBar(cycle: Cycle?) -> some View {
+    private func progressBar(for cycle: Cycle?) -> some View {
         if let cycle = cycle {
             ProgressView(value: cycle.progressRatio(target: targetDate))
                 .tint(Color.accentColor)
@@ -99,9 +107,9 @@ struct CycleProgressView: View {
     }
     
     @ViewBuilder
-    func createProgressText(cycle: Cycle?) -> some View {
+    private func progressText(for cycle: Cycle?) -> some View {
         if let cycle = cycle {
-            Text("\(cycle.progressPercentage(target: targetDate))%\t \(cycle.daysPassed(target: targetDate))/\(cycle.totalDays) days\t Remaining... \(cycle.daysRemaining(target: targetDate)) days")
+            Text("\(cycle.progressPercentage(target: targetDate))% \(cycle.daysPassed(target: targetDate))/\(cycle.totalDays) days Remaining... \(cycle.daysRemaining(target: targetDate)) days")
                 .font(.caption)
                 .foregroundColor(.secondary)
         } else {
@@ -109,4 +117,3 @@ struct CycleProgressView: View {
         }
     }
 }
-
