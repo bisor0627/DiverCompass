@@ -4,20 +4,29 @@ struct CycleProgressView: View {
     @Binding  var cycles: [Cycle]
     @Binding  var overall: Cycle
     @Binding var targetDate: Date
-    @Binding var cycleIndex: Int
-    @State private var showOverall: Bool = true
 
-    init(cycles: Binding<[Cycle]>, overall: Binding<Cycle>, targetDate: Binding<Date>, cycleIndex: Binding<Int>) {
+    
+    @Binding  var overallGoal: Goal?
+    @Binding  var cycleGoals: [Goal]
+    
+    @State private var showOverall: Bool = true
+    @State private var selectedCycleId: UUID?
+    
+    init(cycles: Binding<[Cycle]>, overall: Binding<Cycle>, targetDate: Binding<Date>, overallGoal: Binding<Goal?>, cycleGoals: Binding<[Goal]>) {
         self._cycles = cycles
         self._overall = overall
         self._targetDate = targetDate
-        self._cycleIndex = cycleIndex  // ✅ 외부 cycleIndex 연결
+        self._cycleGoals = cycleGoals
+        self._overallGoal = overallGoal
     }
         
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
                     if showOverall {
+                        
                         VStack{
+                            Text(overallGoal?.title ?? "전체 목표를 설정해보세요")
+                                            .font(.body)
                             HStack(spacing: 4) {
                                 ForEach(cycles, id: \.id) {
                                     cycle in
@@ -26,22 +35,22 @@ struct CycleProgressView: View {
                             }
                             createProgressText(cycle: overall)
                         }
-                        .frame(height: 70)
+                        .frame(height: 80)
                     } else {
-                        TabView(selection: $cycles[cycleIndex].id) {
-                            ForEach(cycles) { cycle in
+                        TabView(selection: $selectedCycleId) {
+                            ForEach(Array(cycles.enumerated()), id: \.1.id) { index, cycle in
                                 VStack(alignment: .leading) {
-                                    Text(cycle.name).font(.caption).bold()
+                                    goalView(for: cycle)
                                     createProgressBar(cycle: cycle)
                                     createProgressText(cycle: cycle)
                                 }
                                 .tag(cycle.id)
                             }
                         }
-                        .frame(height: 70)
+                      
+                        .frame(height: 80)
                         .tabViewStyle(.page(indexDisplayMode: .never))
                         .background(.clear)
-                        .cornerRadius(12)
                     }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -50,8 +59,34 @@ struct CycleProgressView: View {
                 showOverall.toggle()
             }
         }
+        .onAppear {
+            let index = cycles.closestAccurateCycleIndex(from: targetDate)
+            if index >= 0 && index < cycles.count {
+                selectedCycleId = cycles[index].id
+            }
+        }
+        .onChange(of: targetDate) { newDate in
+            let index = cycles.closestAccurateCycleIndex(from: newDate)
+            if index >= 0 && index < cycles.count {
+                selectedCycleId = cycles[index].id
+            }
+        }
     }
-
+    private func goalForCycle(_ cycle: Cycle) -> Goal? {
+         return cycleGoals.first(where: { $0.cycleID == cycle.id })
+     }
+    @ViewBuilder
+    func goalView(for cycle: Cycle) -> some View {
+        if let goal = goalForCycle(cycle) {
+            Text(goal.title)
+                .font(.body)
+        } else {
+            Text("목표가 없습니다")
+                .font(.body)
+                .foregroundColor(.gray)
+        }
+    }
+    
     @ViewBuilder
     func createProgressBar(cycle: Cycle?) -> some View {
         if let cycle = cycle {
@@ -74,3 +109,4 @@ struct CycleProgressView: View {
         }
     }
 }
+

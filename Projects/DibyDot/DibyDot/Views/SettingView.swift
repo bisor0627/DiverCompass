@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct SettingView: View {
-    var currentCycleId: UUID?
 
-    @Binding var cycles: [Cycle]
+    @Binding  var cycles: [Cycle]
+    @Binding  var overall: Cycle
     @Binding var overallGoal: Goal?
-    @Binding var cycleGoals: [String: Goal]
-
-    @State private var reflections: [Reflection] = []
+    @Binding var cycleGoals: [Goal]
+    @Binding var cycleIndex: Int
+    @Binding  var reflections: [Reflection]
 
     @State private var popupMode: PopupCardMode?
 
@@ -16,7 +16,7 @@ struct SettingView: View {
     @State private var reflectionText = ""
 
     @State private var selectedReflection: Reflection?
-    @State private var selectedTabIndex: Int = 0
+    @State private var selectedCycleId: UUID = UUID()
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -41,24 +41,25 @@ struct SettingView: View {
                     .font(.title3)
                     .bold()
 
-                TabView(selection: $selectedTabIndex) {
-                    ForEach(Array(childCycles(of: self.cycles.first, in: self.cycles).enumerated()), id: \.0) { index, cycle in
+                TabView(selection: $selectedCycleId) {
+                    ForEach(Array(cycles.enumerated()), id: \.1.id) { index, cycle in
+                        let goal = cycleGoals.first(where: { $0.cycleID == cycle.id })
+
                         VStack(alignment: .leading) {
                             Text(cycle.name)
                                 .font(.headline)
                                 .bold()
-                            let goal = cycleGoals[cycle.name]
                             GoalInputBubble(
                                 text: goal?.title ?? "\(cycle.name)의 목표를 입력해주세요",
                                 isPlaceholder: goal == nil,
                                 onTap: {
-                                    selectedTabIndex = index
+                                    cycleIndex = index
                                     popupMode = .cycleGoal
                                     cycleGoalText = goal?.title ?? ""
                                 }
                             )
                         }
-                        .tag(index)
+                        .tag(cycle.id)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
@@ -88,11 +89,18 @@ struct SettingView: View {
             }
             .padding()
             .onAppear {
-                let closestIndex = kCycles.closestAccurateCycleIndex()
+                let closestIndex = cycles.closestAccurateCycleIndex()
                 if !cycles.isEmpty && closestIndex < cycles.count {
-                    selectedTabIndex = closestIndex
+                    cycleIndex = closestIndex
+                    selectedCycleId = cycles[closestIndex].id
                 } else {
-                    selectedTabIndex = 0
+                    cycleIndex = 0
+                    selectedCycleId = cycles.first?.id ?? UUID()
+                }
+            }
+            .onChange(of: selectedCycleId) { newValue in
+                if let newIndex = cycles.firstIndex(where: { $0.id == newValue }) {
+                    cycleIndex = newIndex
                 }
             }
             .popupOverlay(
@@ -119,33 +127,35 @@ struct SettingView: View {
         }
     }
 
+
     private func handleSave() {
         guard let mode = popupMode else { return }
 
         switch mode {
         case .overallGoal:
-
             overallGoal = Goal(
-                cycleID: apple4th,
+                cycleID: overall.id,
                 title: overallGoalText
             )
 
         case .cycleGoal:
-            let selectedCycleName = cycles[selectedTabIndex].name
-            cycleGoals[selectedCycleName] = Goal(
-                cycleID: cycleGoals[selectedCycleName]?.id ?? UUID(),
-                title: cycleGoalText
-            )
+            let targetCycle = cycles[cycleIndex]
+            if let index = cycleGoals.firstIndex(where: { $0.cycleID == targetCycle.id }) {
+                cycleGoals[index].title = cycleGoalText
+            } else {
+                let newGoal = Goal(cycleID: targetCycle.id, title: cycleGoalText)
+                cycleGoals.append(newGoal)
+            }
 
         case .reflection:
             if let selected = selectedReflection {
-                if let idx = reflections.firstIndex(where: { $0.id == selected.id }) {
-                    reflections[idx].content = reflectionText
+                if let index = reflections.firstIndex(where: { $0.id == selected.id }) {
+                    reflections[index].content = reflectionText
                 }
             } else {
                 let new = Reflection(
                     content: reflectionText,
-                    cycleID: currentCycleId
+                    cycleID: cycles.closestAccurateCycle().id
                 )
                 reflections.insert(new, at: 0)
             }
@@ -161,9 +171,11 @@ struct SettingView: View {
         switch mode {
         case .overallGoal:
             overallGoal = nil
+
         case .cycleGoal:
-            let selectedCycleName = cycles[selectedTabIndex].name
-            cycleGoals.removeValue(forKey: selectedCycleName)
+            let targetCycle = cycles[cycleIndex]
+            cycleGoals.removeAll { $0.cycleID == targetCycle.id }
+
         case .reflection:
             if let selected = selectedReflection {
                 reflections.removeAll { $0.id == selected.id }
@@ -209,11 +221,7 @@ struct ReflectionBubble: View {
                 Text(reflection.content)
                     .font(.body)
 
-                if let cycle = reflection.cycleID {
-                    Text("📍 \(cycle)")
-                        .font(.caption2)
-                        .foregroundColor(.blue)
-                }
+                cycleNameView(for: reflection)
 
                 Text(reflection.createdAt, style: .date)
                     .font(.caption)
@@ -234,6 +242,15 @@ struct ReflectionBubble: View {
         )
         .onTapGesture { onTap() }
     }
+    @ViewBuilder
+       private func cycleNameView(for reflection: Reflection) -> some View {
+           if let cycleID = reflection.cycleID {
+               let cycleName = kCycles.first(where: { $0.id == cycleID })?.name ?? "Unknown Cycle"
+               Text("📍 \(cycleName)")
+                   .font(.caption2)
+                   .foregroundColor(.blue)
+           }
+       }
 }
 
 extension View {
@@ -276,5 +293,23 @@ extension Array where Element == Cycle {
 
         // 3️⃣ 모든 Cycle이 지난 경우
         return self.count - 1
+    }
+
+    /// 기준 날짜가 속한 Cycle 또는 가장 가까운 미래 Cycle 반환
+    func closestAccurateCycle(from date: Date = .now) -> Cycle {
+        // 1️⃣ 날짜가 포함된 Cycle 우선
+        if let cycle = self.first(where: { $0.dateRange.contains(date) }) {
+            return cycle
+        }
+        
+        // 2️⃣ 미래 시작일 중 가장 가까운 Cycle
+        if let cycle = self.enumerated()
+            .filter({ $0.element.startDate > date })
+            .min(by: { $0.element.startDate < $1.element.startDate })?.element {
+            return cycle
+        }
+        
+        // 3️⃣ 모든 Cycle이 지난 경우 마지막 Cycle 반환
+        return self.last!
     }
 }
