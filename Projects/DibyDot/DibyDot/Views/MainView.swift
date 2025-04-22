@@ -3,12 +3,13 @@ import SwiftUI
 struct MainView: View {
 
     @State private var overallGoal: Goal?
-    @State private var cycleGoals: [String: Goal] = [:]
+    @State private var cycleGoals: [Goal] = []
     @State private var currentDate: Date = .now
     @State private var cycles: [Cycle] = childCycles(of: kCycles.topLevelCycles.first!, in: kCycles)
     @State private var overall: Cycle = kCycles.topLevelCycles.first!
     @State private var cycleIndex: Int =
     kCycles.closestAccurateCycleIndex(from: .now)
+    @State private var reflections: [Reflection] = []
     
  
     var body: some View {
@@ -18,9 +19,12 @@ struct MainView: View {
                 VStack(spacing: 20) {
                     NavigationLink(
                         destination: SettingView(
-                            currentCycleId: kCycles[kCycles.closestAccurateCycleIndex()].id, cycles: $cycles,
+                            cycles: $cycles,
+                            overall: $overall,
                             overallGoal: $overallGoal,
-                            cycleGoals: $cycleGoals
+                            cycleGoals: $cycleGoals,
+                            cycleIndex: $cycleIndex,
+                            reflections: $reflections
                         )
                     ) {
                         Text("🎯 목표/회고 설정")
@@ -31,7 +35,8 @@ struct MainView: View {
                     cycles: $cycles,
                     overall: $overall,
                     targetDate: $currentDate,
-                    cycleIndex: $cycleIndex
+                    overallGoal: $overallGoal,
+                    cycleGoals: $cycleGoals
                    )
                     // 날짜 조작 테스트용 버튼
                     VStack(spacing: 10) {
