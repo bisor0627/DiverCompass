@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct SettingView: View {
-    let cycleList: [Cycle]
     var currentCycleId: UUID?
 
+    @Binding var cycles: [Cycle]
     @Binding var overallGoal: Goal?
     @Binding var cycleGoals: [String: Goal]
 
@@ -42,7 +42,7 @@ struct SettingView: View {
                     .bold()
 
                 TabView(selection: $selectedTabIndex) {
-                    ForEach(Array(cycleList.enumerated()), id: \.0) { index, cycle in
+                    ForEach(Array(childCycles(of: self.cycles.first, in: self.cycles).enumerated()), id: \.0) { index, cycle in
                         VStack(alignment: .leading) {
                             Text(cycle.name)
                                 .font(.headline)
@@ -89,7 +89,7 @@ struct SettingView: View {
             .padding()
             .onAppear {
                 let closestIndex = kCycles.closestAccurateCycleIndex()
-                if !cycleList.isEmpty && closestIndex < cycleList.count {
+                if !cycles.isEmpty && closestIndex < cycles.count {
                     selectedTabIndex = closestIndex
                 } else {
                     selectedTabIndex = 0
@@ -126,12 +126,12 @@ struct SettingView: View {
         case .overallGoal:
 
             overallGoal = Goal(
-                cycleID: kOverall.id,
+                cycleID: apple4th,
                 title: overallGoalText
             )
 
         case .cycleGoal:
-            let selectedCycleName = cycleList[selectedTabIndex].name
+            let selectedCycleName = cycles[selectedTabIndex].name
             cycleGoals[selectedCycleName] = Goal(
                 cycleID: cycleGoals[selectedCycleName]?.id ?? UUID(),
                 title: cycleGoalText
@@ -162,7 +162,7 @@ struct SettingView: View {
         case .overallGoal:
             overallGoal = nil
         case .cycleGoal:
-            let selectedCycleName = cycleList[selectedTabIndex].name
+            let selectedCycleName = cycles[selectedTabIndex].name
             cycleGoals.removeValue(forKey: selectedCycleName)
         case .reflection:
             if let selected = selectedReflection {

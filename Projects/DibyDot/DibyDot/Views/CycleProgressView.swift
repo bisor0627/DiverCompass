@@ -1,43 +1,42 @@
 import SwiftUI
 
 struct CycleProgressView: View {
-    let cycleList: [Cycle]
-    let overallCycle: Cycle
-    @Binding private var targetDate: Date
-    
-    @Binding private var cycleIndex: Int
+    @Binding  var cycles: [Cycle]
+    @Binding  var overall: Cycle
+    @Binding var targetDate: Date
+    @Binding var cycleIndex: Int
     @State private var showOverall: Bool = true
 
-init(cycleList: [Cycle], overallCycle: Cycle, cycleIndex: Binding<Int>, targetDate: Binding<Date>) {
-    self.cycleList = cycleList
-    self.overallCycle = overallCycle
-    self._cycleIndex = cycleIndex
-    self._targetDate = targetDate
-}
+    init(cycles: Binding<[Cycle]>, overall: Binding<Cycle>, targetDate: Binding<Date>, cycleIndex: Binding<Int>) {
+        self._cycles = cycles
+        self._overall = overall
+        self._targetDate = targetDate
+        self._cycleIndex = cycleIndex  // ✅ 외부 cycleIndex 연결
+    }
         
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
                     if showOverall {
                         VStack{
                             HStack(spacing: 4) {
-                                ForEach(cycleList, id: \.name) { cycle in
-                                    createProgressBar(cycle: cycle)
+                                ForEach(cycles, id: \.id) {
+                                    cycle in
+                                      createProgressBar(cycle: cycle)
                                 }
                             }
-                            createProgressText(cycle: overallCycle)
+                            createProgressText(cycle: overall)
                         }
                         .frame(height: 70)
                     } else {
-                        TabView(selection: $cycleIndex) {
-                            ForEach(Array(cycleList.enumerated()), id: \.0) { index, cycle in  
-                                    VStack(alignment: .leading) {
-                                        Text(cycle.name)
-                                            .font(.caption)
-                                            .bold()
-                                        createProgressBar(cycle: cycle)
-                                        createProgressText(cycle: cycle)
-                                    }.tag(index)
+                        TabView(selection: $cycles[cycleIndex].id) {
+                            ForEach(cycles) { cycle in
+                                VStack(alignment: .leading) {
+                                    Text(cycle.name).font(.caption).bold()
+                                    createProgressBar(cycle: cycle)
+                                    createProgressText(cycle: cycle)
                                 }
+                                .tag(cycle.id)
+                            }
                         }
                         .frame(height: 70)
                         .tabViewStyle(.page(indexDisplayMode: .never))
