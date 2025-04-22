@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum PopupCardMode: Equatable {
-    case globalGoal
+    case overallGoal
     case cycleGoal
     case reflection
 }
@@ -89,7 +89,7 @@ struct PopupCardView: View {
 
     private var titleText: String {
         switch mode {
-        case .globalGoal: return "전체 목표 입력"
+        case .overallGoal: return "전체 목표 입력"
         case .cycleGoal: return "사이클 목표 입력"
         case .reflection: return "회고 작성"
         }
