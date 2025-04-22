@@ -25,6 +25,6 @@ struct Goal: Identifiable, Codable, Equatable {
 
 extension Goal { 
     func cycleName() -> String {
-        kCycles.first(where: { $0.id == cycleID })?.name ?? (kOverall.id == cycleID ? kOverall.name : "Unknown")
+      return  kCycles.first(where: { $0.id == cycleID })?.name ?? "Unknown"
     }
 }

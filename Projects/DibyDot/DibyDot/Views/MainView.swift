@@ -5,15 +5,12 @@ struct MainView: View {
     @State private var overallGoal: Goal?
     @State private var cycleGoals: [String: Goal] = [:]
     @State private var currentDate: Date = .now
-    @State private var cycleIndex: Int = kCycles.closestAccurateCycleIndex()
-
-    private var cycleList: [Cycle] {
-        kCycles
-    }
-    private var overallCycle: Cycle {
-        kOverall
-    }
-
+    @State private var cycles: [Cycle] = childCycles(of: kCycles.topLevelCycles.first!, in: kCycles)
+    @State private var overall: Cycle = kCycles.topLevelCycles.first!
+    @State private var cycleIndex: Int =
+    kCycles.closestAccurateCycleIndex(from: .now)
+    
+ 
     var body: some View {
         ZStack {
             BubbleBackgroundView()
@@ -21,8 +18,7 @@ struct MainView: View {
                 VStack(spacing: 20) {
                     NavigationLink(
                         destination: SettingView(
-                            cycleList: cycleList,
-                            currentCycleId: kCycles[kCycles.closestAccurateCycleIndex()].id,
+                            currentCycleId: kCycles[kCycles.closestAccurateCycleIndex()].id, cycles: $cycles,
                             overallGoal: $overallGoal,
                             cycleGoals: $cycleGoals
                         )
@@ -32,11 +28,10 @@ struct MainView: View {
                     }
                     
                    CycleProgressView(
-                       cycleList: cycleList,
-                       overallCycle: overallCycle,
-                       cycleIndex: $cycleIndex,
-                       targetDate: $currentDate
-                       
+                    cycles: $cycles,
+                    overall: $overall,
+                    targetDate: $currentDate,
+                    cycleIndex: $cycleIndex
                    )
                     // 날짜 조작 테스트용 버튼
                     VStack(spacing: 10) {
@@ -46,12 +41,14 @@ struct MainView: View {
                         HStack(spacing: 16) {
                             Button("◀︎ 하루 전") {
                                 currentDate = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
-                                    cycleIndex = kCycles.closestAccurateCycleIndex(from: currentDate)
+                                cycleIndex = cycles.closestAccurateCycleIndex(from: currentDate)
+                                
                             }
                             .buttonStyle(.bordered)
                             Button("하루 후 ▶︎") {
                                 currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
-                                    cycleIndex = kCycles.closestAccurateCycleIndex(from: currentDate)
+                                cycleIndex = cycles.closestAccurateCycleIndex(from: currentDate)
+                                
                             }
                             .buttonStyle(.bordered)
                         }
