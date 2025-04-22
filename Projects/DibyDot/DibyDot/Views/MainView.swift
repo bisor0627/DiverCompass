@@ -1,0 +1,83 @@
+import SwiftUI
+
+struct MainView: View {
+
+    @State private var overallGoal: Goal?
+    @State private var cycleGoals: [Goal] = []
+    @State private var currentDate: Date = .now
+    @State private var cycles: [Cycle] = childCycles(of: kCycles.topLevelCycles.first!, in: kCycles)
+    @State private var overall: Cycle = kCycles.topLevelCycles.first!
+    @State private var cycleIndex: Int =
+    kCycles.closestAccurateCycleIndex(from: .now)
+    @State private var reflections: [Reflection] = []
+    
+ 
+    var body: some View {
+        ZStack {
+            BubbleBackgroundView()
+            NavigationStack {
+                VStack(spacing: 20) {
+                    NavigationLink(
+                        destination: SettingView(
+                            cycles: $cycles,
+                            overall: $overall,
+                            overallGoal: $overallGoal,
+                            cycleGoals: $cycleGoals,
+                            cycleIndex: $cycleIndex,
+                            reflections: $reflections
+                        )
+                    ) {
+                        Text("🎯 목표/회고 설정")
+                            .tint(.oceanSplash)
+                    }
+                    
+                   CycleProgressView(
+                    cycles: $cycles,
+                    overall: $overall,
+                    targetDate: $currentDate,
+                    overallGoal: $overallGoal,
+                    cycleGoals: $cycleGoals
+                   )
+                    // 날짜 조작 테스트용 버튼
+                    VStack(spacing: 10) {
+                        Text("현재 날짜: \(formattedDate(currentDate))")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        HStack(spacing: 16) {
+                            Button("◀︎ 하루 전") {
+                                updateDate(by: -1)
+                            }
+                            .buttonStyle(.bordered)
+                            Button("하루 후 ▶︎") {
+                                updateDate(by: 1)
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
+                    .padding(.top, 8)
+                    
+                    Spacer()
+                }
+                .padding()
+                .navigationBarTitleDisplayMode(.inline)
+            }
+        }
+    }
+
+    private func updateDate(by days: Int) {
+        currentDate = Calendar.current.date(byAdding: .day, value: days, to: currentDate) ?? currentDate
+        cycleIndex = cycles.closestAccurateCycleIndex(from: currentDate)
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.string(from: date)
+    }
+}
+
+#Preview {
+    MainView()
+}
