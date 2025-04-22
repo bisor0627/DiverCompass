@@ -2,7 +2,7 @@ import Foundation
 
 let apple4th = UUID()
 let kCycles: [Cycle] = [
-    Cycle(apple4th, name: "apple4th", type: .other,
+    Cycle(apple4th, name: "ADA 4th", type: .other,
           startDate: DateFormatter.kst.date(from: "2025-03-10")!,
           endDate: DateFormatter.kst.date(from: "2025-12-12")!,
           parentID: nil),
