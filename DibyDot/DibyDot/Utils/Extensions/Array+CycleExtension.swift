@@ -2,9 +2,6 @@ import Foundation
 
 extension Array where Element == Cycle {
 
-    var topLevelCycles: [Cycle] {
-        self.filter { $0.parentID == nil }
-    }
     /// 기준 날짜가 속한 Cycle 또는 가장 가까운 미래 Cycle의 index 반환
     func closestAccurateCycleIndex(from date: Date = .now) -> Int {
         // 1️⃣ 날짜가 포함된 Cycle 우선

@@ -16,8 +16,6 @@ struct BubbleBackgroundView: View {
                 }
             }
             .frame(height: geometry.size.height) // 전체 높이 보장
-            .padding(.top)
-            .padding(.bottom)
         }
         .ignoresSafeArea() // 이건 유지 (배경이 safe area까지 덮기 위해)
     }

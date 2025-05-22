@@ -10,8 +10,7 @@ struct SplitView<Top: View, Bottom: View>: View {
             let maxHeight = geometry.size.height - safeAreaInsets.top - safeAreaInsets.bottom
 
             ZStack(alignment: .topLeading) {
-                BubbleBackgroundView(topRatio: 0.35)
-
+                BubbleBackgroundView(topRatio: 0)
                 VStack(spacing: 0) {
                     topContent()
                         .frame(height: maxHeight * 0.35)
