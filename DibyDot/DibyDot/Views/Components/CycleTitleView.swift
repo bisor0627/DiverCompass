@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CycleTitle: View {
+struct CycleTitleView: View {
     @Binding var cycles: [Cycle]
     @Binding var overall: Cycle
     @Binding var cycleIndex: Int
