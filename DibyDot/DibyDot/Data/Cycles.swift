@@ -1,12 +1,11 @@
 import Foundation
 
 let apple4th = UUID()
+let overallCycle: Cycle =   Cycle(apple4th, name: "ADA @Postech 4th", type: .overall,
+                                  startDate: DateFormatter.kst.date(from: "2025-03-10")!,
+                                  endDate: DateFormatter.kst.date(from: "2025-12-12")!,
+                                  parentID: nil)
 let kCycles: [Cycle] = [
-    Cycle(apple4th, name: "ADA 4th", type: .other,
-          startDate: DateFormatter.kst.date(from: "2025-03-10")!,
-          endDate: DateFormatter.kst.date(from: "2025-12-12")!,
-          parentID: nil),
-                            
 Cycle(name: "Prelude", type: .bridge,
         startDate: DateFormatter.kst.date(from: "2025-03-10")!,
       endDate: DateFormatter.kst.date(from: "2025-03-15")!, parentID: apple4th),

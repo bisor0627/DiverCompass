@@ -3,10 +3,7 @@ import SwiftUI
 struct CycleProgressView: View {
     @Binding var cycles: [Cycle]
     @Binding var overall: Cycle
-    @Binding var overallGoal: Goal?
-    @Binding var cycleGoals: [Goal]
-    
-    @Binding var selectedCycleId: UUID  // MainView에서 전달받음
+    @Binding var cycleIndex: Int  // MainView에서 전달받음
     @Binding var isOverall: Bool        // MainView에서 컨트롤하는 상태
 
     // internalTargetDate로 Date.now 사용
@@ -14,20 +11,6 @@ struct CycleProgressView: View {
         Date.now
     }
     
-    init(cycles: Binding<[Cycle]>,
-         overall: Binding<Cycle>,
-         overallGoal: Binding<Goal?>,
-         cycleGoals: Binding<[Goal]>,
-         selectedCycleId: Binding<UUID>,
-         isOverall: Binding<Bool>
-        ) {
-        self._cycles = cycles
-        self._overall = overall
-        self._overallGoal = overallGoal
-        self._cycleGoals = cycleGoals
-        self._selectedCycleId = selectedCycleId
-        self._isOverall = isOverall
-    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -46,28 +29,24 @@ struct CycleProgressView: View {
     
     // MARK: - Overall ProgressView
     private var overallProgressView: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            GoalView(cycle: overall, goal: overallGoal)
-                .font(.body)
+    
             HStack(spacing: 4) {
                 ForEach(cycles, id: \.id) { cycle in
                     progressBar(for: cycle)
                 }
             }
-        }
         .frame(height: 80)
     }
     
     // MARK: - Cycle TabView
     private var cycleProgressTabView: some View {
-        TabView(selection: $selectedCycleId) {
-            ForEach(cycles, id: \.id) { cycle in
+        TabView(selection: $cycleIndex) {
+            ForEach(Array(cycles.enumerated()), id: \.1.id) { index, cycle in
                 VStack(alignment: .leading, spacing: 4) {
-                    GoalView(cycle: cycle, goal: goalForCycle(cycle))
-                        .font(.body)
+                    // optional: GoalView 등 삽입 가능
                     progressBar(for: cycle)
                 }
-                .tag(cycle.id)
+                .tag(index) // 여기서 index를 tag로 지정
             }
         }
         .frame(height: 80)
@@ -76,24 +55,57 @@ struct CycleProgressView: View {
     }
     
     private func updateSelectedCycle() {
-        let index = cycles.closestAccurateCycleIndex(from: internalTargetDate)
-        if index >= 0 && index < cycles.count {
-            selectedCycleId = cycles[index].id
+        if isOverall == false {
+            let index = cycles.closestAccurateCycleIndex(from: internalTargetDate)
+            if index >= 0 && index < cycles.count {
+                cycleIndex = index
+            }
         }
     }
     
-    private func goalForCycle(_ cycle: Cycle) -> Goal? {
-        cycleGoals.first { $0.cycleID == cycle.id }
-    }
+
     
     @ViewBuilder
     private func progressBar(for cycle: Cycle?) -> some View {
         if let cycle = cycle {
-            ProgressView(value: cycle.progressRatio())
+            ClippedProgressBar(progress: cycle.progressRatio())
                 .tint(Color.accentColor)
                 .frame(height: 20)
         } else {
             EmptyView()
         }
+    }
+}
+
+
+struct ClippedProgressBar: View {
+    var progress: Double // 0.0 ~ 1.0
+    
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            let height: CGFloat = 20
+
+            ZStack(alignment: .leading) {
+                // 🔽 배경 레이어 (흐릿한 이미지 or 그라데이션)
+                Spacer()
+                    .scaledToFill()
+                    .frame(width: width, height: height)
+                    .background(Color.deepCurrent)
+                    .clipped()
+                    .opacity(0.1)
+
+                // 진행 이미지 + 그라데이션 애니메이션
+                Spacer()
+                    .scaledToFill()
+                    .frame(width:  width * progress, height: height)
+                    .background(Color.inkDepth)
+                    .opacity(0.3)
+                    .clipped()
+            }
+            .frame(height: height)
+            .clipShape(Capsule())
+        }
+        .frame(height: 20)
     }
 }
