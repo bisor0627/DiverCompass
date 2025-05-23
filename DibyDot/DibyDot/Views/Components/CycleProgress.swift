@@ -80,7 +80,6 @@ struct CycleProgressView: View {
 
 struct ClippedProgressBar: View {
     var progress: Double // 0.0 ~ 1.0
-    @State private var animateGradient = false
     
     var body: some View {
         GeometryReader { geo in
@@ -89,8 +88,7 @@ struct ClippedProgressBar: View {
 
             ZStack(alignment: .leading) {
                 // 🔽 배경 레이어 (흐릿한 이미지 or 그라데이션)
-                Image("wave_background")
-                    .resizable()
+                Spacer()
                     .scaledToFill()
                     .frame(width: width, height: height)
                     .background(Color.deepCurrent)
@@ -98,29 +96,12 @@ struct ClippedProgressBar: View {
                     .opacity(0.1)
 
                 // 진행 이미지 + 그라데이션 애니메이션
-                Image("wave_foreground")
-                    .resizable()
+                Spacer()
                     .scaledToFill()
                     .frame(width:  width * progress, height: height)
-                    .overlay(
-                        // 그라데이션 애니메이션 오버레이
-                        LinearGradient(
-                            gradient: Gradient(colors: [.oceanSplash, .inkDepth, .oceanSplash]),
-                            startPoint: animateGradient ? .trailing : .leading,
-                            endPoint: animateGradient ? .trailing : .leading
-                        )
-                        .blendMode(.darken)
-                        .opacity(0.7)
-                        .animation(
-                            .linear(duration: 5)
-                                .repeatForever(autoreverses: true),
-                            value: animateGradient
-                        )
-                    )
+                    .background(Color.inkDepth)
+                    .opacity(0.3)
                     .clipped()
-                    .onAppear {
-                        animateGradient.toggle()
-                    }
             }
             .frame(height: height)
             .clipShape(Capsule())
